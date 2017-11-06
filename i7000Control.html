@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Управление модулями I-7000</title>
+    </head>
+    <meta charset="utf-8">
+    <h1>Управление модулями I-7000</h1>
+    <body>
+      <form method="get" name="MainForm" target="_top">
+          <p>COM-порт:
+            <input maxlength="3" name="portNumber" size="4" type="text" value="0" />
+          </p>
+          
+          <p>Скорость обмена:
+            <input maxlength="5" name="speed" size="7" type="text" value="9600" />
+          </p>
+          
+          <p>
+            <input name="openPort" type="submit" value="Открыть порт" />
+          </p>
+      </form>
+          
+      <form method="get" name="CommandForm" target="_top">
+        <p>Команда:
+          <input maxlength="40" name="command" size="10" type="text" />
+        </p>
+        <p>
+          <input name="writeToPort" type="submit" value="Записать в порт" />
+        </p>
+      </form>
+
+      <p>awdawdawdd</p>
+      <form method="get" name="textAreaForm" target="_top">
+        <textarea cols="400" name="history" rows="70">12345678910 Жертва</textarea>
+      </form>
+    </body>
+    <p>&nbsp;</p>
+</html>
