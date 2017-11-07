@@ -1,0 +1,39 @@
+﻿
+<html> 
+	<head> 
+		<meta charset="utf-8">
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+		<script src="http://malsup.github.com/jquery.form.js"></script> 
+		
+		<script>
+			function AjaxFormRequest(result_id,formPort,url) {
+			   jQuery.ajax({
+				  url:     url,
+				  type:     "GET",
+				  dataType: "html",
+				  data: jQuery("#"+formPort).serialize(),
+				  success: function(response) {
+					 document.getElementById(result_id).innerHTML = response;
+				  },
+				  error: function(response) {
+					 document.getElementById(result_id).innerHTML = "Возникла ошибка при отправке формы. Попробуйте еще раз";
+				  }
+			   });
+			}
+		</script>
+	 </head> 
+	 
+	<body>
+		<form method="get" action="" id="formPort">
+			<input id="numberPort" type="text" name="numberPort" placeholder="Номер порта" maxlength="30" autocomplete="off" />
+			<p><select name="speed" size="5"><option value="18400">18400</option><option selected="selected" value="9200">9200</option><option value="4800">4800</option><option value="2400">2400</option><option value="1200">1200</option></select></p>
+			<input id="button" type="button" value="Открыть порт" onclick="AjaxFormRequest('messegeResult', 'formPort')"/>
+		</form>
+		
+		<form method="get" action="" id="formSpeed">
+		<p></p>
+			<input id="command" type="text" name="command" placeholder="Команда" maxlength="50" autocomplete="off" />
+			<input id="buttonCommand" type="button" value="Отправить команду" onclick="AjaxFormRequest('messegeResult', 'formSpeed')"/>
+		</form>
+	</body>
+</html>

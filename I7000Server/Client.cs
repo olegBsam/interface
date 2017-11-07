@@ -87,7 +87,9 @@ namespace I7000Server
             }
             if (reqUri.EndsWith("/"))
             {
-                SendFile(client, "i7000Control.html");
+                string path = Directory.GetCurrentDirectory();
+                path = path.Remove(path.IndexOf("\\bin")) + "\\i7000Control.html";
+                SendFile(client, path);
             }
         }
 
