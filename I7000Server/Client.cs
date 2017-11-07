@@ -133,6 +133,7 @@ namespace I7000Server
             return true;
         }
 
+      
         private void GetExtension(string extension, out string contentType)
         {
             switch (extension)
