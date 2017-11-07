@@ -19,14 +19,15 @@ namespace I7000Server
 
         public Client(TcpClient newClient)
         {
-            string html = readFile("i7000Control.html");
+           // SendFile(newClient, "i7000Control.html");
+            //string html = readFile("i7000Control.html");
 
-            string str = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:"
-                + html.Length.ToString() + "\n\n" + html;
+            //string str = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:"
+            //    + html.Length.ToString() + "\n\n" + html;
 
-            byte[] buf = Encoding.UTF8.GetBytes(str);
+            //byte[] buf = Encoding.UTF8.GetBytes(str);
 
-            newClient.GetStream().Write(buf, 0, buf.Length);
+            //newClient.GetStream().Write(buf, 0, buf.Length);
 
             GetRequest(newClient);
 
@@ -49,7 +50,7 @@ namespace I7000Server
             if (req.Contains("favicon"))
                 return;
 
-            if (mas[1] == "portNumber")
+            if (mas[1] != null && mas[1] == "portNumber")
             {
                 mas = req.Split(new string[] { "GET /?portNumber=", "&speed=", "&" },
                     StringSplitOptions.None);
@@ -60,7 +61,7 @@ namespace I7000Server
                 OpenPort(portNumber, speed);
                 return;
             }
-            if (mas[1] == "command")
+            if (mas[1] != null && mas[1] == "command")
             {
                 mas = req.Split(new string[] { "GET /?command=", "&" },
                    StringSplitOptions.None);
@@ -86,12 +87,7 @@ namespace I7000Server
             }
             if (reqUri.EndsWith("/"))
             {
-                string html = readFile("i7000Control.html");
-                string str = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:"
-                    + html.Length.ToString() + "\n\n" + html;
-
-                byte[] buf = Encoding.UTF8.GetBytes(str);
-                client.GetStream().Write(buf, 0, buf.Length);
+                SendFile(client, "i7000Control.html");
             }
         }
 
@@ -117,7 +113,6 @@ namespace I7000Server
             string contentType = "";
             GetExtension(path.Substring(path.LastIndexOf('.')), out contentType);
 
-
             ///Ответ на запрос
             //Открываем запрошенный файл
             FileStream fileStream;
@@ -136,18 +131,6 @@ namespace I7000Server
 
             fileStream.Close();
             return true;
-        }
-
-        private string readFile(string path)
-        {
-            StringBuilder html = new StringBuilder();
-
-            string[] lines = File.ReadAllLines(path);
-
-            foreach (var l in lines)
-                html.Append(l);
-
-            return html.ToString();
         }
 
         private void GetExtension(string extension, out string contentType)
