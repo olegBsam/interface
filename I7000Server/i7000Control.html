@@ -67,17 +67,18 @@
                     },
                     statusCode:{ 
 						425:function(){ 
-							button.disabled = true;
-							document.getElementById('portNumber').disabled = true;
-							document.getElementById('speed').disabled = true;
+							button.disabled = false;
+							document.getElementById('portNumber').disabled = false;
+							document.getElementById('speed').disabled = false;
+							document.getElementById('openPort').disabled = false;
 							document.getElementById('closePort').disabled = false;
-							document.getElementById('command').disabled = true;
-							document.getElementById('buttonCommand').disabled = true;
-							document.getElementById('frequency').disabled = true;
-							document.getElementById('amplitude').disabled = true;
-							document.getElementById('samplingFrequency').disabled = true;
-							document.getElementById('buttonMeandrHanded').disabled = true;
-							document.getElementById('buttonMeandrAutomatic').disabled = true;
+							document.getElementById('command').disabled = false;
+							document.getElementById('buttonCommand').disabled = false;
+							document.getElementById('frequency').disabled = false;
+							document.getElementById('amplitude').disabled = false;
+							document.getElementById('samplingFrequency').disabled = false;
+							document.getElementById('buttonMeandrHanded').disabled = false;
+							document.getElementById('buttonMeandrAutomatic').disabled = false;
 						alert('Не удалось открыть порт'); 
 						}, 
 						427:function(){ 

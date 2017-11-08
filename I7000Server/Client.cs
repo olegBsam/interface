@@ -21,14 +21,20 @@ namespace I7000Server
         byte[] buffer = new byte[1024];
         int count;
 
-
-
-
         public Client(TcpClient newClient)
         {
             GetRequest(newClient);
-
             newClient.Close();
+        }
+
+        //Создание потока клиента
+        private static Object locker = null;
+        public static void ClientThread(Object stateInfo)
+        {
+            while (locker != null) ;
+            locker = new Object();
+            new Client((TcpClient)stateInfo);
+            locker = null;
         }
 
         public void GetRequest(TcpClient client)
@@ -41,9 +47,6 @@ namespace I7000Server
                     break;
             }
 
-            string req = request.ToString();
-
-
             Match ReqMatch = Regex.Match(request.ToString(), @"^\w+\s+([^\s\?]+)[^\s]*\s+HTTP/.*|");
 
             if (ReqMatch == Match.Empty)
@@ -52,17 +55,16 @@ namespace I7000Server
                 return;
             }
 
+            //Кнопки
             if (ReqMatch.Groups[0].Value.Contains("portNumber"))
-            {
-                string reqStr = ReqMatch.Groups[0].Value;
-                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+            { 
                 try
                 {
+                    string reqStr = ReqMatch.Groups[0].Value;
+                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
                     Modul.GetModul.openPort(masStr[1], masStr[3]);
                     sendOK(client);
                 }
-
-
                 catch(Exception e)
                 {
                     sendNotOk(client, 425.ToString());
@@ -87,10 +89,11 @@ namespace I7000Server
             }
 
 
+            //Запросы на страницы
             string reqUri = ReqMatch.Groups[1].Value;
             reqUri = Uri.UnescapeDataString(reqUri);
 
-
+            #region SendPage();
             if (reqUri.IndexOf("..") >= 0)
             {
                 SendError(client, 400);
@@ -120,38 +123,12 @@ namespace I7000Server
                 }
                 return;
             }
+#endregion
         }
 
-        public bool SendFile(TcpClient client, string path)
-        {
-            if (!File.Exists(path))
-            {
-                SendError(client, 400);
-                return false;
-            }
-            string contentType = "";
-            GetExtension(path.Substring(path.LastIndexOf('.')), out contentType);
+       
 
-            ///Ответ на запрос
-            //Открываем запрошенный файл
-            FileStream fileStream;
-            try
-            {
-                fileStream = new FileStream(path, FileMode.Open, FileAccess.Read,
-                    FileShare.Read);
-            }
-            catch (Exception)
-            {
-                SendError(client, 500);
-                return false;
-            }
-
-            HeaderSending(client, contentType, fileStream);
-            fileStream.Close();
-            return true;
-        }
-
-
+        //Получение типов содержимого
         private void GetExtension(string extension, out string contentType)
         {
             switch (extension)
@@ -182,17 +159,8 @@ namespace I7000Server
                     break;
             }
         }
-
-        //Создание потока клиента
-        private static Object locker = null;
-        public static void ClientThread(Object stateInfo)
-        {
-            while (locker != null) ;
-            locker = new Object();
-            new Client((TcpClient)stateInfo);
-            locker = null;
-        }
-
+        
+        //Отправка заголовка
         private void HeaderSending(TcpClient client, string contentType, FileStream fs)
         {
             string headers = "HTTP/1.1 200 OK\nContent-Type: " +
@@ -206,6 +174,35 @@ namespace I7000Server
                 count = fs.Read(buffer, 0, buffer.Length);
                 client.GetStream().Write(buffer, 0, count);
             }
+        }
+
+        //Ответы сервера
+        public bool SendFile(TcpClient client, string path)
+        {
+            if (!File.Exists(path))
+            {
+                SendError(client, 400);
+                return false;
+            }
+            string contentType = "";
+            GetExtension(path.Substring(path.LastIndexOf('.')), out contentType);
+
+            //Открываем запрошенный файл
+            FileStream fileStream;
+            try
+            {
+                fileStream = new FileStream(path, FileMode.Open, FileAccess.Read,
+                    FileShare.Read);
+            }
+            catch (Exception)
+            {
+                SendError(client, 500);
+                return false;
+            }
+
+            HeaderSending(client, contentType, fileStream);
+            fileStream.Close();
+            return true;
         }
 
         private void sendOK(TcpClient client)
@@ -231,7 +228,7 @@ namespace I7000Server
                 client.Close();
             }
         }
-
+        //Отправка кода ошибки
         private void SendError(TcpClient client, int code = 0, string codeString = null)
         {
             try
