@@ -63,7 +63,7 @@ namespace I7000Server
                 }
 
 
-                catch(Exception e)
+                catch(Exception)
                 {
                     sendNotOk(client, 425.ToString());
                 }

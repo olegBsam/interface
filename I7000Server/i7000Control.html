@@ -21,7 +21,8 @@
 				var lenghter = (frequency.length != 0 && amplitude.length != 0 && samplingFrequency.length != 0);
 				var moreThenZero = (frequency > 0 && amplitude > 0 && samplingFrequency > 0);
 				
-				return (lenghter && moreThenZero && samplingFrequency < document.getElementById('speed').val());
+				var e = document.getElementById('speed')
+				return (lenghter && moreThenZero && samplingFrequency < e.options[e.selectedIndex].value);
 			} 
 		</script> 
 		
@@ -38,6 +39,7 @@
 					
 					success: function(result){
 						$('#frame').attr('src', $('#frame').attr('src'));
+						
 						if(button.id == 'openPort') {
 							button.disabled = true;
 							document.getElementById('portNumber').disabled = true;
@@ -67,10 +69,24 @@
                     },
                     statusCode:{ 
 						425:function(){ 
+						if(button.id == 'openPort') {
 							button.disabled = true;
 							document.getElementById('portNumber').disabled = true;
 							document.getElementById('speed').disabled = true;
 							document.getElementById('closePort').disabled = false;
+							document.getElementById('command').disabled = false;
+							document.getElementById('buttonCommand').disabled = false;
+							document.getElementById('frequency').disabled = false;
+							document.getElementById('amplitude').disabled = false;
+							document.getElementById('samplingFrequency').disabled = false;
+							document.getElementById('buttonMeandrHanded').disabled = false;
+							document.getElementById('buttonMeandrAutomatic').disabled = false;
+						}
+						else if(button.id == 'closePort') {
+							button.disabled = true;
+							document.getElementById('portNumber').disabled = false;
+							document.getElementById('speed').disabled = false;
+							document.getElementById('openPort').disabled = false;
 							document.getElementById('command').disabled = true;
 							document.getElementById('buttonCommand').disabled = true;
 							document.getElementById('frequency').disabled = true;
@@ -78,10 +94,11 @@
 							document.getElementById('samplingFrequency').disabled = true;
 							document.getElementById('buttonMeandrHanded').disabled = true;
 							document.getElementById('buttonMeandrAutomatic').disabled = true;
-						alert('Не удалось открыть порт'); 
+						}
+							alert('Не удалось открыть порт'); 
 						}, 
 						427:function(){ 
-						alert('Не удалось записать команду в порт'); 
+							alert('Не удалось записать команду в порт'); 
 						} 
 					}
 				})
@@ -89,24 +106,75 @@
 			} 
 		</script> 
 		
-		<script type="text/javascript">
+		<script> 
 			google.charts.load('current', {'packages':['corechart']});
 			google.charts.setOnLoadCallback(drawChart);
 			function drawChart() {
 				var data = google.visualization.arrayToDataTable([
-				  ['Время', 'Значение'],
-				  ['0',  0]
-				]);
-
+						  ['Время', 'Значение'],
+						  ['0',  0]
+						]);
+						
 				var options = {
-					title: 'Меандр',
+					title: 'Ручной меандр',
 					legend: { position: 'bottom' }
 				};
-
-				var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-
+				
+				var chart = new google.visualization.LineChart(document.getElementById('chartHanded'));
 				chart.draw(data, options);
-			  }
+					
+				options = {
+					title: 'Автоматический меандр',
+					legend: { position: 'bottom' }
+				};
+				
+				chart = new google.visualization.LineChart(document.getElementById('chartAuto'));
+				chart.draw(data, options);
+			}
+		</script>
+		
+		<script>
+			function Meander(button){
+				if(button.id == 'buttonMeandrHanded'){
+					
+					google.charts.load('current', {'packages':['corechart']});
+					google.charts.setOnLoadCallback(drawChart);
+					function drawChart() {
+						var data = google.visualization.arrayToDataTable([
+						  ['Время', 'Значение'],
+						  ['0',  0]
+						]);
+
+						var options = {
+							title: 'Ручной меандр',
+							legend: { position: 'bottom' }
+						};
+
+						var chart = new google.visualization.LineChart(document.getElementById('chartHanded'));
+
+						chart.draw(data, options);
+					}
+				}
+				else{
+					google.charts.load('current', {'packages':['corechart']});
+					google.charts.setOnLoadCallback(drawChart);
+					function drawChart() {
+						var data = google.visualization.arrayToDataTable([
+						  ['Время', 'Значение'],
+						  ['0',  0]
+						]);
+
+						var options = {
+							title: 'Автоматический меандр',
+							legend: { position: 'bottom' }
+						};
+
+						var chart = new google.visualization.LineChart(document.getElementById('chartAuto'));
+
+						chart.draw(data, options);
+					}
+				}
+			}
 		</script>
 	
 		<style type="text/css">
@@ -117,11 +185,19 @@
 				left: 460px; /* Расстояние от левого края */ 
 			}
 			
-			#curve_chart {
+			#chartHanded {
 				position: absolute;
 				left: -110px; /* Расстояние от левого края */
 				width: 900px; 
 				height: 500px;
+			}
+			
+			#chartAuto {
+				position: absolute;
+				left: -110px; /* Расстояние от левого края */
+				width: 900px; 
+				height: 500px;
+				top: 600;
 			}
 		</style>
 	</head> 
@@ -161,8 +237,9 @@
 				<input id="buttonMeandrAutomatic" type="button" value="Получить меандр" onclick="AjaxFormRequest('formMeandr', this)" disabled="true"/> 
 			</form> 
 			
-			<div id="curve_chart"></div>
+			<div id="chartHanded"></div>
+			<div id="chartAuto"></div>
 		</div>
 		
 	</body> 
-	</html>
+</html>
