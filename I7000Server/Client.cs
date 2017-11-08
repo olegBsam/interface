@@ -26,7 +26,7 @@ namespace I7000Server
 
         public Client(TcpClient newClient)
         {
-            while (true)
+            //while (true)
             {
                 GetRequest(newClient);
             }
@@ -63,6 +63,7 @@ namespace I7000Server
                 int speed = 0;
                 int.TryParse(masStr[3], out speed);
                 OpenPort(portNumber, speed);
+                sendOK(client);
                 ///Отправка новой станицы? 
                 ///Открыть порт
 
@@ -71,7 +72,7 @@ namespace I7000Server
             {
                 string reqStr = ReqMatch.Groups[0].Value;
                 string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
-
+                sendOK(client);
                 //Выполнить команду
                 return;
             }
@@ -151,7 +152,6 @@ namespace I7000Server
             }
 
             HeaderSending(client, contentType, fileStream);
-
             fileStream.Close();
             return true;
         }
@@ -213,6 +213,13 @@ namespace I7000Server
             }
         }
 
+        private void sendOK(TcpClient client)
+        {
+            string headers = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 0\n\n";
+            buffer = Encoding.UTF8.GetBytes(headers);
+            client.GetStream().Write(buffer, 0, buffer.Length);
+
+        }
         private void SendError(TcpClient client, int code)
         {
             try
