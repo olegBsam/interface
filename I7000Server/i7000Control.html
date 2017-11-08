@@ -38,7 +38,6 @@
 					
 					success: function(result){
 						$('#frame').attr('src', $('#frame').attr('src'));
-						
 						if(button.id == 'openPort') {
 							button.disabled = true;
 							document.getElementById('portNumber').disabled = true;
@@ -66,9 +65,25 @@
 							document.getElementById('buttonMeandrAutomatic').disabled = true;
 						}
                     },
-                    error: function(err){
-                        alert('Ошибка');
-                    }
+                    statusCode:{ 
+						425:function(){ 
+							button.disabled = true;
+							document.getElementById('portNumber').disabled = true;
+							document.getElementById('speed').disabled = true;
+							document.getElementById('closePort').disabled = false;
+							document.getElementById('command').disabled = true;
+							document.getElementById('buttonCommand').disabled = true;
+							document.getElementById('frequency').disabled = true;
+							document.getElementById('amplitude').disabled = true;
+							document.getElementById('samplingFrequency').disabled = true;
+							document.getElementById('buttonMeandrHanded').disabled = true;
+							document.getElementById('buttonMeandrAutomatic').disabled = true;
+						alert('Не удалось открыть порт'); 
+						}, 
+						427:function(){ 
+						alert('Не удалось записать команду в порт'); 
+						} 
+					}
 				})
 				return false;
 			} 
@@ -146,7 +161,7 @@
 				<input id="buttonMeandrAutomatic" type="button" value="Получить меандр" onclick="AjaxFormRequest('formMeandr', this)" disabled="true"/> 
 			</form> 
 			
-			<div id="curve_chart"</div>
+			<div id="curve_chart"></div>
 		</div>
 		
 	</body> 

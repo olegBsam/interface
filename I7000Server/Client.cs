@@ -61,6 +61,8 @@ namespace I7000Server
                     Modul.GetModul.openPort(masStr[1], masStr[3]);
                     sendOK(client);
                 }
+
+
                 catch(Exception e)
                 {
                     sendNotOk(client, 425.ToString());
