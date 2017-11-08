@@ -15,14 +15,18 @@
 					return ($("#command").val().length != 0); 
 				}
 				
-				var frequency = $("#frequency").val();
-				var amplitude = $("#amplitude").val();
-				var samplingFrequency = $("#samplingFrequency").val();
-				var lenghter = (frequency.length != 0 && amplitude.length != 0 && samplingFrequency.length != 0);
-				var moreThenZero = (frequency > 0 && amplitude > 0 && samplingFrequency > 0);
+				if(form == 'formMeandrHanded'){
+					var frequency = $("#frequency").val();
+					var amplitude = $("#amplitude").val();
+					var samplingFrequency = $("#samplingFrequency").val();
+					var lenghter = (frequency.length != 0 && amplitude.length != 0 && samplingFrequency.length != 0);
+					var moreThenZero = (frequency > 0 && amplitude > 0 && samplingFrequency > 0);
+					
+					var e = document.getElementById('speed')
+					return (lenghter && moreThenZero && samplingFrequency < e.options[e.selectedIndex].value);
+				}
 				
-				var e = document.getElementById('speed')
-				return (lenghter && moreThenZero && samplingFrequency < e.options[e.selectedIndex].value);
+				return true;
 			} 
 		</script> 
 		
@@ -228,13 +232,17 @@
 		<div id="content">
 			<h2>Меандр</h2>
 			
-			<form method="get" action="" id="formMeandr"> 
+			<form method="get" action="" id="formMeandrHanded"> 
 				<input id="frequency" type="number" name="frequency" placeholder="Частота" maxlength="5" autocomplete="off" disabled="true"/> 
 				<input id="amplitude" type="number" name="amplitude" placeholder="Амплитуда" maxlength="5" autocomplete="off" disabled="true"/> 
 				<input id="samplingFrequency" type="number" name="samplingFrequency" placeholder="Частота дискретизации" maxlength="5" autocomplete="off" disabled="true"/> 
-				
-				<input id="buttonMeandrHanded" type="button" value="Построить меандр" onclick="AjaxFormRequest('formMeandr', this)" disabled="true"/> 
-				<input id="buttonMeandrAutomatic" type="button" value="Получить меандр" onclick="AjaxFormRequest('formMeandr', this)" disabled="true"/> 
+				<br></br>
+				<input id="buttonMeandrHanded" type="button" value="Построить меандр" onclick="AjaxFormRequest('formMeandrHanded', this)" disabled="true"/> 
+			</form> 
+			
+			<form method="get" action="" id="formMeandrAuto"> 
+				<input id="auto" type="number" name="auto" style="display:none;"/> 
+				<input id="buttonMeandrAutomatic" type="button" value="Получить меандр" onclick="AjaxFormRequest('formMeandrAuto', this)" disabled="true"/> 
 			</form> 
 			
 			<div id="chartHanded"></div>
