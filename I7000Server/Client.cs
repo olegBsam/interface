@@ -242,7 +242,7 @@ namespace I7000Server
 
         private void sendOK(TcpClient client,string mes = "200 OK", int len = 0)
         {
-            string headers = "HTTP/1.1 "+ mes +"\nContent-Type: text/html\nContent-Length: " + len.ToString() + "\n\n";
+            string headers = "HTTP/1.1 "+ mes +"\nContent-Type: text/html\nContent-Length: 0\n\n";
             buffer = Encoding.UTF8.GetBytes(headers);
             client.GetStream().Write(buffer, 0, buffer.Length);
         }
