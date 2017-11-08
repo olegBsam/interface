@@ -26,10 +26,8 @@ namespace I7000Server
 
         public Client(TcpClient newClient)
         {
-            //while (true)
-            {
-                GetRequest(newClient);
-            }
+            GetRequest(newClient);
+
             newClient.Close();
         }
 
@@ -57,19 +55,35 @@ namespace I7000Server
             if (ReqMatch.Groups[0].Value.Contains("portNumber"))
             {
                 string reqStr = ReqMatch.Groups[0].Value;
-                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);;
-                Modul.GetModul.openPort(masStr[1], masStr[3]);
-                sendOK(client);
+                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries); ;
+                try
+                {
+                    Modul.GetModul.openPort(masStr[1], masStr[3]);
+                    sendOK(client);
+                }
+                catch(Exception e)
+                {
+                    SendError(client, codeString: e.Message);
+                }
                 return;
-            }else if (ReqMatch.Groups[0].Value.Contains("command"))
+            }
+            else if (ReqMatch.Groups[0].Value.Contains("command"))
             {
                 string reqStr = ReqMatch.Groups[0].Value;
                 string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
-                Modul.GetModul.WriteToPort(masStr[1]);
-                sendOK(client);
+
+                try
+                {
+                    Modul.GetModul.WriteToPort(masStr[1]);
+                    sendOK(client);
+                }
+                catch(Exception e)
+                {
+                    SendError(client, codeString: e.Message);
+                }
                 return;
             }
-            
+
 
             string reqUri = ReqMatch.Groups[1].Value;
             reqUri = Uri.UnescapeDataString(reqUri);
@@ -135,7 +149,7 @@ namespace I7000Server
             return true;
         }
 
-      
+
         private void GetExtension(string extension, out string contentType)
         {
             switch (extension)
@@ -171,7 +185,7 @@ namespace I7000Server
         private static Object locker = null;
         public static void ClientThread(Object stateInfo)
         {
-            while (locker != null);
+            while (locker != null) ;
             locker = new Object();
             new Client((TcpClient)stateInfo);
             locker = null;
@@ -184,8 +198,8 @@ namespace I7000Server
 
             byte[] headerBuf = Encoding.UTF8.GetBytes(headers);
             client.GetStream().Write(headerBuf, 0, headerBuf.Length);
-                        
-            while(fs.Position < fs.Length)
+
+            while (fs.Position < fs.Length)
             {
                 count = fs.Read(buffer, 0, buffer.Length);
                 client.GetStream().Write(buffer, 0, count);
@@ -197,13 +211,14 @@ namespace I7000Server
             string headers = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 0\n\n";
             buffer = Encoding.UTF8.GetBytes(headers);
             client.GetStream().Write(buffer, 0, buffer.Length);
-
         }
-        private void SendError(TcpClient client, int code)
+
+        private void SendError(TcpClient client, int code = 0, string codeString = null)
         {
             try
             {
-                string codeString = code.ToString() + " " + ((HttpStatusCode)code).ToString();
+                if (codeString == null)
+                    codeString = code.ToString() + " " + ((HttpStatusCode)code).ToString();
                 //Страница с ошибкой
                 string html = "<html><body><h1>" + codeString + "</h1></body></html>";
                 //необходимые заголовки

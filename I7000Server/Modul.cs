@@ -72,51 +72,51 @@ namespace I7000Server
 
         public void addHistoryMessage(string msg)
         {
-            History.WriteHistory("<p>" + msg + "</p>");
+            History.WriteHistory(msg + "<br>");
         }
 
 
         public void openPort(string portName, string speed)
         {
-            //    if (comPort.IsOpen)
-            //        comPort.Close();
-            //    else
-            //    {// порт ранее открыт не был
-            //     // название COM-порта
-            //        comPort.PortName = portName;
-            //        // скорость работы COM-порта
-            //        int baudRate = 9600;
-            //        int.TryParse(speed, out baudRate);
-            //        comPort.BaudRate = baudRate;
-            //        // число бит данных
-            //        comPort.DataBits = 8;
-            //        // число стоповых бит - один
-            //        comPort.StopBits = StopBits.One;
-            //        // бит паритета - нет
-            //        comPort.Parity = Parity.None;
-            //        // квитировать установление связи - нет
-            //        comPort.Handshake = Handshake.None;
-            //        // число принимаемых бит
-            //        comPort.ReceivedBytesThreshold = 8;
-            //        // размер буфера для записи
-            //        comPort.WriteBufferSize = 20;
-            //        // размер буфера для чтения
-            //        comPort.ReadBufferSize = 20;
-            //        // время таймаута чтения - по умолчанию
-            //        comPort.ReadTimeout = -1;
-            //        // время таймаута записи - по умолчанию
-            //        comPort.WriteTimeout = -1;
-            //        // сигнал готовности терминала к передаче данных - не установлен
-            //        comPort.DtrEnable = false;
-            //        // открыть порт
-            //        comPort.Open();
-            //        // запрос передатчика - установлен
-            //        comPort.RtsEnable = true;
-            //        // задержка
-            //        System.Threading.Thread.Sleep(100);
-            //        addHistoryMessage("Порт открыт. \n");
-            //    }
-            //}
+            portName = "COM" + portName;
+            if (comPort.IsOpen)
+                comPort.Close();
+            else
+            {// порт ранее открыт не был
+             // название COM-порта
+                comPort.PortName = portName;
+                // скорость работы COM-порта
+                int baudRate = 9600;
+                int.TryParse(speed, out baudRate);
+                comPort.BaudRate = baudRate;
+                // число бит данных
+                comPort.DataBits = 8;
+                // число стоповых бит - один
+                comPort.StopBits = StopBits.One;
+                // бит паритета - нет
+                comPort.Parity = Parity.None;
+                // квитировать установление связи - нет
+                comPort.Handshake = Handshake.None;
+                // число принимаемых бит
+                comPort.ReceivedBytesThreshold = 8;
+                // размер буфера для записи
+                comPort.WriteBufferSize = 20;
+                // размер буфера для чтения
+                comPort.ReadBufferSize = 20;
+                // время таймаута чтения - по умолчанию
+                comPort.ReadTimeout = -1;
+                // время таймаута записи - по умолчанию
+                comPort.WriteTimeout = -1;
+                // сигнал готовности терминала к передаче данных - не установлен
+                comPort.DtrEnable = false;
+                // открыть порт
+                comPort.Open();
+                // запрос передатчика - установлен
+                comPort.RtsEnable = true;
+                // задержка
+                System.Threading.Thread.Sleep(100);
+                addHistoryMessage("Порт " + portName + " открыт \n");
+            }
         }
     }
 }
