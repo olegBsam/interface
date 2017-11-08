@@ -13,6 +13,8 @@ namespace I7000Server
             ThreadPool.SetMaxThreads(5, 5);
             ThreadPool.SetMinThreads(3, 3);
 
+            Modul.CreateModul();
+
             Server srv = new Server(8080);
             srv.Start();
         }

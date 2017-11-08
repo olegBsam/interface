@@ -9,7 +9,14 @@ namespace I7000Server
 {
     static class History
     {
-        public static void WriteHistory(string path, string message)
+        private static string path;
+        static History()
+        {
+            string str = Directory.GetCurrentDirectory();
+            path = str.Remove(str.IndexOf("\\bin")) + "\\history.html";
+        }
+        
+        public static void WriteHistory(string message)
         {
             lock (Client.fileHistryRead)
             {

@@ -57,23 +57,16 @@ namespace I7000Server
             if (ReqMatch.Groups[0].Value.Contains("portNumber"))
             {
                 string reqStr = ReqMatch.Groups[0].Value;
-                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
-                int portNumber = 0;
-                int.TryParse(masStr[1], out portNumber);
-                int speed = 0;
-                int.TryParse(masStr[3], out speed);
-                OpenPort(portNumber, speed);
+                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);;
+                Modul.GetModul.openPort(masStr[1], masStr[3]);
                 sendOK(client);
-                ///Отправка новой станицы? 
-                ///Открыть порт
-
                 return;
             }else if (ReqMatch.Groups[0].Value.Contains("command"))
             {
                 string reqStr = ReqMatch.Groups[0].Value;
                 string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+                Modul.GetModul.WriteToPort(masStr[1]);
                 sendOK(client);
-                //Выполнить команду
                 return;
             }
             
@@ -112,20 +105,6 @@ namespace I7000Server
                 return;
             }
         }
-
-        public void Command(string command)
-        {
-
-        }
-        public void OpenPort(int portNumber, int speed)
-        {
-            if (speed == 0)
-                speed = 9600;
-            string path = Directory.GetCurrentDirectory();
-            History.WriteHistory(path.Remove(path.IndexOf("\\bin")) + "\\history.html", "Порт открыт");
-
-        }
-
 
         public bool SendFile(TcpClient client, string path)
         {
