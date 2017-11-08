@@ -41,38 +41,43 @@
 					dataType: "html", 
 					data: jQuery("#"+form).serialize(),
 					
-					success: function(result){
-						$('#frame').attr('src', $('#frame').attr('src'));
-						
-						if(button.id == 'openPort') {
-							button.disabled = true;
-							document.getElementById('portNumber').disabled = true;
-							document.getElementById('speed').disabled = true;
-							document.getElementById('closePort').disabled = false;
-							document.getElementById('command').disabled = false;
-							document.getElementById('buttonCommand').disabled = false;
-							document.getElementById('frequency').disabled = false;
-							document.getElementById('amplitude').disabled = false;
-							document.getElementById('samplingFrequency').disabled = false;
-							document.getElementById('buttonMeandrHanded').disabled = false;
-							document.getElementById('buttonMeandrAutomatic').disabled = false;
+					success: function(result) {
+						if(form == 'formMeandrHanded' || form == 'formMeandrAuto') {
+							Meander(button, result);
 						}
-						else if(button.id == 'closePort') {
-							button.disabled = true;
-							document.getElementById('portNumber').disabled = false;
-							document.getElementById('speed').disabled = false;
-							document.getElementById('openPort').disabled = false;
-							document.getElementById('command').disabled = true;
-							document.getElementById('buttonCommand').disabled = true;
-							document.getElementById('frequency').disabled = true;
-							document.getElementById('amplitude').disabled = true;
-							document.getElementById('samplingFrequency').disabled = true;
-							document.getElementById('buttonMeandrHanded').disabled = true;
-							document.getElementById('buttonMeandrAutomatic').disabled = true;
+						else
+						{
+							$('#frame').attr('src', $('#frame').attr('src'));
+							if(button.id == 'openPort') {
+								button.disabled = true;
+								document.getElementById('portNumber').disabled = true;
+								document.getElementById('speed').disabled = true;
+								document.getElementById('closePort').disabled = false;
+								document.getElementById('command').disabled = false;
+								document.getElementById('buttonCommand').disabled = false;
+								document.getElementById('frequency').disabled = false;
+								document.getElementById('amplitude').disabled = false;
+								document.getElementById('samplingFrequency').disabled = false;
+								document.getElementById('buttonMeandrHanded').disabled = false;
+								document.getElementById('buttonMeandrAutomatic').disabled = false;
+							}
+							else if(button.id == 'closePort') {
+								button.disabled = true;
+								document.getElementById('portNumber').disabled = false;
+								document.getElementById('speed').disabled = false;
+								document.getElementById('openPort').disabled = false;
+								document.getElementById('command').disabled = true;
+								document.getElementById('buttonCommand').disabled = true;
+								document.getElementById('frequency').disabled = true;
+								document.getElementById('amplitude').disabled = true;
+								document.getElementById('samplingFrequency').disabled = true;
+								document.getElementById('buttonMeandrHanded').disabled = true;
+								document.getElementById('buttonMeandrAutomatic').disabled = true;
+							}
 						}
                     },
                     statusCode:{ 
-						425:function(){ 
+						425:function(e){
 						if(button.id == 'openPort') {
 							button.disabled = true;
 							document.getElementById('portNumber').disabled = true;
@@ -138,16 +143,28 @@
 		</script>
 		
 		<script>
-			function Meander(button){
+			function Meander(button, values){
 				if(button.id == 'buttonMeandrHanded'){
-					
 					google.charts.load('current', {'packages':['corechart']});
 					google.charts.setOnLoadCallback(drawChart);
+					var arr = values.split(' ');
+					var n = arr.length + 1;
+					var vals = [];
+					
+					vals[0] = [];
+					
+					vals[0][0] = 'Время';
+					vals[0][1] = 'Значение';
+
+					for(var i = 1; i < n; i++){
+						vals[i] = [];
+						
+						vals[i][0] = (i-1).toString();
+						vals[i][1] = +arr[i-1];
+					}
+					
 					function drawChart() {
-						var data = google.visualization.arrayToDataTable([
-						  ['Время', 'Значение'],
-						  ['0',  0]
-						]);
+						var data = google.visualization.arrayToDataTable(vals);
 
 						var options = {
 							title: 'Ручной меандр',
@@ -201,7 +218,7 @@
 				left: -110px; /* Расстояние от левого края */
 				width: 900px; 
 				height: 500px;
-				top: 600;
+				top: 630;
 			}
 		</style>
 	</head> 
