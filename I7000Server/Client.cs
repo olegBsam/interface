@@ -7,6 +7,7 @@ using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Web;
 
 namespace I7000Server
 {
@@ -46,6 +47,7 @@ namespace I7000Server
                 if (request.IndexOf("\r\n\r\n") >= 0 || request.Length > 4096) //\r\n\r\n - конец запроса, иначе принимаем не более 4Кб
                     break;
             }
+
 
 
             Match ReqMatch = Regex.Match(request.ToString(), @"^\w+\s+([^\s\?]+)[^\s]*\s+HTTP/.*|");
@@ -96,6 +98,15 @@ namespace I7000Server
                     string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
 
                     string result = Modul.GetModul.BuildMeandre(masStr[1], masStr[3], masStr[5]);
+
+                    string html = result;
+                    //необходимые заголовки
+                    //ответ сервера, тип и длина содержимого.
+                    string pageStr = "HTTP/1.1 200 OK"+
+                        " \nContent-type: text/html\nContent-Length:" + html.Length.ToString() + "\n\n" + html;
+
+                    buffer = Encoding.UTF8.GetBytes(pageStr);
+                    client.GetStream().Write(buffer, 0, buffer.Length);
 
                     sendOK(client, result, result.Length);
                 }
