@@ -15,16 +15,17 @@ namespace I7000Server
     {
 
         public volatile static object fileHistryRead = new object();
-        private volatile static object fileIco = new object();
-        private volatile static object fileMainPage = new object();
 
-        string request = "";
-        byte[] buffer = new byte[1024];
-        int count;
+        private string request = "";
+        private byte[] buffer = new byte[1024];
+        private int count;
+
+        private TcpClient CurrentClient { get; set; }
 
         public Client(TcpClient newClient)
         {
-            GetRequest(newClient);
+            CurrentClient = newClient;
+            GetRequest();
             newClient.Close();
         }
 
@@ -38,116 +39,48 @@ namespace I7000Server
             locker = null;
         }
 
-        public void GetRequest(TcpClient client)
+        public void GetRequest()
         {
             request = string.Empty;
-            while ((count = client.GetStream().Read(buffer, 0, buffer.Length)) > 0)
+            while ((count = CurrentClient.GetStream().Read(buffer, 0, buffer.Length)) > 0)
             {
                 request += Encoding.UTF8.GetString(buffer, 0, count);
                 if (request.IndexOf("\r\n\r\n") >= 0 || request.Length > 4096) //\r\n\r\n - конец запроса, иначе принимаем не более 4Кб
                     break;
             }
 
+            Match reqMatch = Regex.Match(request.ToString(), @"^\w+\s+([^\s\?]+)[^\s]*\s+HTTP/.*|");
 
-
-            Match ReqMatch = Regex.Match(request.ToString(), @"^\w+\s+([^\s\?]+)[^\s]*\s+HTTP/.*|");
-
-            if (ReqMatch == Match.Empty)
+            if (reqMatch == Match.Empty)
             {
-                SendError(client, 404);
+                SendError(404);
                 return;
             }
 
-            //Кнопки
-            if (ReqMatch.Groups[0].Value.Contains("portNumber"))
-            {
-                try
-                {
-                    string reqStr = ReqMatch.Groups[0].Value;
-                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
-                    Modul.GetModul.openPort(masStr[1], masStr[3]);
-                    SendMessage(client);
-                }
-                catch (Exception e)
-                {
-                    sendNotOk(client, 425.ToString());
-                }
+            //Обработчики кнопок
+            if (ButtonsHandlers(reqMatch))
                 return;
-            }
-            else if (ReqMatch.Groups[0].Value.Contains("command"))
-            {
-                string reqStr = ReqMatch.Groups[0].Value;
-                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
 
-                try
-                {
-                    Modul.GetModul.WriteToPort(masStr[1]);
-                    SendMessage(client);
-                }
-                catch (Exception)
-                {
-                    sendNotOk(client, 427.ToString());
-                }
-                return;
-            }
-            else if (ReqMatch.Groups[0].Value.Contains("frequency"))
-            {
-                try
-                {
-                    string reqStr = ReqMatch.Groups[0].Value;
-                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
-
-                    string result = Modul.GetModul.BuildMeandre(masStr[1], masStr[3], masStr[5]);
-                 
-                    SendMessage(client, len: result.Length, html: result);
-                }
-                catch (Exception)
-                {
-                    sendNotOk(client, 425.ToString());
-                }
-                return;
-            }
-            else if (ReqMatch.Groups[0].Value.Contains("auto"))
-            {
-                try
-                {
-                    string reqStr = ReqMatch.Groups[0].Value;
-                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
-
-                    string result = Modul.GetModul.ReadMeandre(masStr[1]);
-
-                    SendMessage(client, result, result.Length);
-                }
-                catch (Exception e)
-                {
-                    sendNotOk(client, 425.ToString());
-                }
-                return;
-            }
-
-
-            //Запросы на страницы
-            string reqUri = ReqMatch.Groups[1].Value;
+            //Запросы страниц
+            string reqUri = reqMatch.Groups[1].Value;
             reqUri = Uri.UnescapeDataString(reqUri);
 
             #region SendPage();
             if (reqUri.IndexOf("..") >= 0)
             {
-                SendError(client, 400);
+                SendError(400);
                 return;
             }
             if (reqUri.EndsWith("/"))
             {
                 string path = Directory.GetCurrentDirectory();
-                path = path.Remove(path.IndexOf("\\bin")) + "\\i7000Control.html";
-                SendFile(client, path);
+                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\i7000Control.html");
                 return;
             }
             if (reqUri.EndsWith("/favicon.ico"))
             {
                 string path = Directory.GetCurrentDirectory();
-                path = path.Remove(path.IndexOf("\\bin")) + "\\favicon.ico";
-                SendFile(client, path);
+                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\favicon.ico");
                 return;
             }
             if (reqUri.EndsWith("/history.html"))
@@ -155,15 +88,12 @@ namespace I7000Server
                 lock (fileHistryRead)
                 {
                     string path = Directory.GetCurrentDirectory();
-                    path = path.Remove(path.IndexOf("\\bin")) + "\\history.html";
-                    SendFile(client, path);
+                    SendFile(path.Remove(path.IndexOf("\\bin")) + "\\history.html");
                 }
                 return;
             }
             #endregion
         }
-
-
 
         //Получение типов содержимого
         private void GetExtension(string extension, out string contentType)
@@ -197,28 +127,25 @@ namespace I7000Server
             }
         }
 
-        //Отправка заголовка
-        private void HeaderSending(TcpClient client, string contentType, FileStream fs)
+        //Отправка файла с заголовков
+        private void HeaderSending(string contentType, FileStream fs)
         {
-            string headers = "HTTP/1.1 200 OK\nContent-Type: " +
-                contentType + "\nContent-Length: " + fs.Length + "\n\n";
-
-            byte[] headerBuf = Encoding.UTF8.GetBytes(headers);
-            client.GetStream().Write(headerBuf, 0, headerBuf.Length);
+            SendMessage(len: fs.Length.ToString(), contentType: contentType);
 
             while (fs.Position < fs.Length)
             {
                 count = fs.Read(buffer, 0, buffer.Length);
-                client.GetStream().Write(buffer, 0, count);
+                CurrentClient.GetStream().Write(buffer, 0, count);
             }
         }
 
-        //Ответы сервера
-        public bool SendFile(TcpClient client, string path)
+
+        //Отправка файла с заголовком (страниц)
+        public bool SendFile(string path)
         {
             if (!File.Exists(path))
             {
-                SendError(client, 400);
+                SendError(400);
                 return false;
             }
             string contentType = "";
@@ -233,43 +160,25 @@ namespace I7000Server
             }
             catch (Exception)
             {
-                SendError(client, 500);
+                SendError(500);
                 return false;
             }
 
-            HeaderSending(client, contentType, fileStream);
+            HeaderSending(contentType, fileStream);
             fileStream.Close();
             return true;
         }
 
-
-        private void SendMessage(TcpClient client, string code = "200 OK", int len = 0, string html = "")
+        private void SendMessage(string code = "200 OK", string len = "0", string html = "", string contentType = "text/html")
         {
             string pageStr = "HTTP/1.1 " + code +
-                      " \nContent-type: text/html\nContent-Length:" + len.ToString() + "\n\n" + html;
+                      " \nContent-type: " + contentType + "\nContent-Length:" + len + "\n\n" + html;
             buffer = Encoding.UTF8.GetBytes(pageStr);
-            client.GetStream().Write(buffer, 0, buffer.Length);
+            CurrentClient.GetStream().Write(buffer, 0, buffer.Length);
         }
 
-        private void sendNotOk(TcpClient client, string codeString)
-        {
-            try
-            {
-                string headers = "HTTP/1.1 " + codeString + " Bad request \nContent-Type: text/html\nContent-Length: 0\n\n";
-                buffer = Encoding.UTF8.GetBytes(headers);
-                client.GetStream().Write(buffer, 0, buffer.Length);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error!");
-            }
-            finally
-            {
-                client.Close();
-            }
-        }
         //Отправка кода ошибки
-        private void SendError(TcpClient client, int code = 0, string codeString = null)
+        private void SendError(int code = 0, string codeString = null)
         {
             try
             {
@@ -278,21 +187,88 @@ namespace I7000Server
                 //Страница с ошибкой
                 string html = "<html><body><h1>" + codeString + "</h1></body></html>";
                 //необходимые заголовки
-                //ответ сервера, тип и длина содержимого.
-                string pageStr = "HTTP/1.1 " + codeString +
-                    " \nContent-type: text/html\nContent-Length:" + html.Length.ToString() + "\n\n" + html;
-
-                buffer = Encoding.UTF8.GetBytes(pageStr);
-                client.GetStream().Write(buffer, 0, buffer.Length);
+                SendMessage(codeString, html.Length.ToString(), html: html);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Error!");
             }
             finally
             {
-                client.Close();
+                CurrentClient.Close();
             }
+        }
+
+
+        //Обработка кнопок
+        public bool ButtonsHandlers(Match reqMatch)
+        {
+            if (reqMatch.Groups[0].Value.Contains("portNumber"))
+            {
+                try
+                {
+                    string reqStr = reqMatch.Groups[0].Value;
+                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+                    Modul.GetModul.openPort(masStr[1], masStr[3]);
+                    SendMessage();
+                }
+                catch (Exception)
+                {
+                    SendMessage(425.ToString() + " Bad request ", 0.ToString());
+                }
+                return true;
+            }
+            else if (reqMatch.Groups[0].Value.Contains("command"))
+            {
+                string reqStr = reqMatch.Groups[0].Value;
+                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+
+                try
+                {
+                    Modul.GetModul.WriteToPort(masStr[1]);
+                    SendMessage();
+                }
+                catch (Exception)
+                {
+                    SendMessage(427.ToString() + " Bad request ", 0.ToString());
+                }
+                return true;
+            }
+            else if (reqMatch.Groups[0].Value.Contains("frequency"))
+            {
+                try
+                {
+                    string reqStr = reqMatch.Groups[0].Value;
+                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+
+                    string result = Modul.GetModul.BuildMeandre(masStr[1], masStr[3], masStr[5]);
+
+                    SendMessage(len: result.Length.ToString(), html: result);
+                }
+                catch (Exception)
+                {
+                    SendMessage(425.ToString() + " Bad request ", 0.ToString());
+                }
+                return true;
+            }
+            else if (reqMatch.Groups[0].Value.Contains("auto"))
+            {
+                try
+                {
+                    string reqStr = reqMatch.Groups[0].Value;
+                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+
+                    string result = Modul.GetModul.ReadMeandre(masStr[1]);
+
+                    SendMessage(result, result.Length.ToString());
+                }
+                catch (Exception)
+                {
+                    SendMessage(425.ToString() + " Bad request ", 0.ToString());
+                }
+                return true;
+            }
+            return false;
         }
     }
 }
