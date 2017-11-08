@@ -23,12 +23,20 @@
 				jQuery.ajax({ 
 					type: "GET", 
 					dataType: "html", 
-					data: jQuery("#"+form).serialize(), 
-				}) 
+					data: jQuery("#"+form).serialize(),
+					
+					success: function(result){
+						$('#frame').attr('src', $('#frame').attr('src'));
+                    },
+                    error: function(err){
+                        alert(Ошибка);
+                    }
+				})
+				return false;
 			} 
 		</script> 
 		<style>
-				textarea { resize: none; }
+			textarea { resize: none; }
 		</style>
 	</head> 
 	
@@ -52,6 +60,6 @@
 		</form> 
 
 		<p>История команд:</p> 
-		<iframe src="http://127.0.0.1:8080/history.html"> </iframe>
+		<iframe src="http://127.0.0.1:8080/history.html" id="frame"> </iframe>
 	</body> 
 	</html>
