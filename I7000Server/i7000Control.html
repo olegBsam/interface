@@ -21,12 +21,12 @@
 				var lenghter = (frequency.length != 0 && amplitude.length != 0 && samplingFrequency.length != 0);
 				var moreThenZero = (frequency > 0 && amplitude > 0 && samplingFrequency > 0);
 				
-				return (lenghter && moreThenZero);
+				return (lenghter && moreThenZero && samplingFrequency < document.getElementById('speed').val());
 			} 
 		</script> 
 		
 		<script> 
-			function AjaxFormRequest(form) { 
+			function AjaxFormRequest(form, button) { 
 				if(!checkValidation(form)){ 
 					alert('Некорректные данные'); 
 					return; 
@@ -38,15 +38,37 @@
 					
 					success: function(result){
 						$('#frame').attr('src', $('#frame').attr('src'));
-                    },
-					statusCode:{
-						425:function(){
-						alert('Не удалось открыть порт');
-						},
-						427:function(){
-						alert('Не удалось записать команду в порт');
+						
+						if(button.id == 'openPort') {
+							button.disabled = true;
+							document.getElementById('portNumber').disabled = true;
+							document.getElementById('speed').disabled = true;
+							document.getElementById('closePort').disabled = false;
+							document.getElementById('command').disabled = false;
+							document.getElementById('buttonCommand').disabled = false;
+							document.getElementById('frequency').disabled = false;
+							document.getElementById('amplitude').disabled = false;
+							document.getElementById('samplingFrequency').disabled = false;
+							document.getElementById('buttonMeandrHanded').disabled = false;
+							document.getElementById('buttonMeandrAutomatic').disabled = false;
 						}
-					}
+						else if(button.id == 'closePort') {
+							button.disabled = true;
+							document.getElementById('portNumber').disabled = false;
+							document.getElementById('speed').disabled = false;
+							document.getElementById('openPort').disabled = false;
+							document.getElementById('command').disabled = true;
+							document.getElementById('buttonCommand').disabled = true;
+							document.getElementById('frequency').disabled = true;
+							document.getElementById('amplitude').disabled = true;
+							document.getElementById('samplingFrequency').disabled = true;
+							document.getElementById('buttonMeandrHanded').disabled = true;
+							document.getElementById('buttonMeandrAutomatic').disabled = true;
+						}
+                    },
+                    error: function(err){
+                        alert('Ошибка');
+                    }
 				})
 				return false;
 			} 
@@ -55,14 +77,10 @@
 		<script type="text/javascript">
 			google.charts.load('current', {'packages':['corechart']});
 			google.charts.setOnLoadCallback(drawChart);
-
 			function drawChart() {
 				var data = google.visualization.arrayToDataTable([
 				  ['Время', 'Значение'],
-				  ['2004',  1000],
-				  ['2005',  1170],
-				  ['2006',  660],
-				  ['2007',  1030]
+				  ['0',  0]
 				]);
 
 				var options = {
@@ -97,20 +115,20 @@
 		<form method="get" action="" id="formPort"> 
 			<input id="portNumber" type="number" name="portNumber" placeholder="Номер порта" maxlength="30" autocomplete="off" />
 			<p>Скорость:</p> 
-			<p><select name="speed" size="5">
+			<p><select name="speed" id = "speed" size="5">
 				<option value="19200">19200</option>
 				<option selected="selected" value="9600">9600</option>
 				<option value="4800">4800</option>
 				<option value="2400">2400</option>
 				<option value="1200">1200</option>
 			</select></p> 
-			<input id="openPort" type="button" value="Открыть порт" onclick="AjaxFormRequest('formPort')"/>
-			<input id="closePort" type="button" value="Закрыть порт" onclick="AjaxFormRequest('formPort')"/> 
+			<input id="openPort" type="button" value="Открыть порт" onclick="AjaxFormRequest('formPort', this)"/>
+			<input id="closePort" type="button" value="Закрыть порт" disabled="true" onclick="AjaxFormRequest('formPort', this)"/> 
 		</form> 
 		
 		<form method="get" action="" id="formCommand"> 
-			<input id="command" type="text" name="command" placeholder="Команда" maxlength="50" autocomplete="off" /> 
-			<input id="buttonCommand" type="button" value="Отправить команду" onclick="AjaxFormRequest('formCommand')"/> 
+			<input id="command" type="text" name="command" placeholder="Команда" disabled="true" maxlength="50" autocomplete="off" /> 
+			<input id="buttonCommand" type="button" value="Отправить команду" disabled="true" onclick="AjaxFormRequest('formCommand', this)"/> 
 		</form> 
 
 		<p>История команд:</p> 
@@ -120,12 +138,12 @@
 			<h2>Меандр</h2>
 			
 			<form method="get" action="" id="formMeandr"> 
-				<input id="frequency" type="number" name="frequency" placeholder="Частота" maxlength="5" autocomplete="off" /> 
-				<input id="amplitude" type="number" name="amplitude" placeholder="Амплитуда" maxlength="5" autocomplete="off" /> 
-				<input id="samplingFrequency" type="number" name="samplingFrequency" placeholder="Частота дискретизации" maxlength="5" autocomplete="off" /> 
+				<input id="frequency" type="number" name="frequency" placeholder="Частота" maxlength="5" autocomplete="off" disabled="true"/> 
+				<input id="amplitude" type="number" name="amplitude" placeholder="Амплитуда" maxlength="5" autocomplete="off" disabled="true"/> 
+				<input id="samplingFrequency" type="number" name="samplingFrequency" placeholder="Частота дискретизации" maxlength="5" autocomplete="off" disabled="true"/> 
 				
-				<input id="buttonMeandrHanded" type="button" value="Построить меандр" onclick="AjaxFormRequest('formMeandr')"/> 
-				<input id="buttonMeandrAutomatic" type="button" value="Получить меандр" onclick="AjaxFormRequest('formMeandr')"/> 
+				<input id="buttonMeandrHanded" type="button" value="Построить меандр" onclick="AjaxFormRequest('formMeandr', this)" disabled="true"/> 
+				<input id="buttonMeandrAutomatic" type="button" value="Получить меандр" onclick="AjaxFormRequest('formMeandr', this)" disabled="true"/> 
 			</form> 
 			
 			<div id="curve_chart"</div>
