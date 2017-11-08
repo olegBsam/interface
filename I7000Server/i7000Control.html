@@ -39,9 +39,14 @@
 					success: function(result){
 						$('#frame').attr('src', $('#frame').attr('src'));
                     },
-                    error: function(err){
-                        alert('Ошибка');
-                    }
+					statusCode:{
+						425:function(){
+						alert('Не удалось открыть порт');
+						},
+						427:function(){
+						alert('Не удалось записать команду в порт');
+						}
+					}
 				})
 				return false;
 			} 

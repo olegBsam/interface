@@ -63,7 +63,7 @@ namespace I7000Server
                 }
                 catch(Exception e)
                 {
-                    SendError(client, codeString: e.Message);
+                    sendNotOk(client, 425.ToString());
                 }
                 return;
             }
@@ -79,7 +79,7 @@ namespace I7000Server
                 }
                 catch(Exception e)
                 {
-                    SendError(client, codeString: e.Message);
+                    sendNotOk(client, 427.ToString());
                 }
                 return;
             }
@@ -212,13 +212,27 @@ namespace I7000Server
             buffer = Encoding.UTF8.GetBytes(headers);
             client.GetStream().Write(buffer, 0, buffer.Length);
         }
+        private void sendNotOk(TcpClient client, string codeString)
+        {
+            try
+            {
+                string headers = "HTTP/1.1 " + codeString + " Bad request \nContent-Type: text/html\nContent-Length: 0\n\n";
+                buffer = Encoding.UTF8.GetBytes(headers);
+                client.GetStream().Write(buffer, 0, buffer.Length);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error!");
+            }
+            finally
+            {
+                client.Close();
+            }
+        }
 
         private void SendError(TcpClient client, int code = 0, string codeString = null)
         {
-            string headers = "HTTP/1.1 400 Bad Request\nContent-Type: text/html\nContent-Length: 0\n\n";
-            buffer = Encoding.UTF8.GetBytes(headers);
-            client.GetStream().Write(buffer, 0, buffer.Length);
-            /*try
+            try
             {
                 if (codeString == null)
                     codeString = code.ToString() + " " + ((HttpStatusCode)code).ToString();
@@ -227,7 +241,7 @@ namespace I7000Server
                 //необходимые заголовки
                 //ответ сервера, тип и длина содержимого.
                 string pageStr = "HTTP/1.1 " + codeString +
-                    "\nContent-type: text/html\nContent-Length:" + html.Length.ToString() + "\n\n" + html;
+                    " \nContent-type: text/html\nContent-Length:" + html.Length.ToString() + "\n\n" + html;
 
                 buffer = Encoding.UTF8.GetBytes(pageStr);
                 client.GetStream().Write(buffer, 0, buffer.Length);
@@ -239,7 +253,7 @@ namespace I7000Server
             finally
             {
                 client.Close();
-            }*/
+            }
         }
     }
 }
