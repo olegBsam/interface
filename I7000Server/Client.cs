@@ -13,29 +13,29 @@ namespace I7000Server
     public class Client
     {
 
+        public volatile static object fileHistryRead = new object();
+        private volatile static object fileIco = new object();
+        private volatile static object fileMainPage = new object();
+
         string request = "";
         byte[] buffer = new byte[1024];
         int count;
 
+
+
+
         public Client(TcpClient newClient)
         {
-           // SendFile(newClient, "i7000Control.html");
-            //string html = readFile("i7000Control.html");
-
-            //string str = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:"
-            //    + html.Length.ToString() + "\n\n" + html;
-
-            //byte[] buf = Encoding.UTF8.GetBytes(str);
-
-            //newClient.GetStream().Write(buf, 0, buf.Length);
-
-            GetRequest(newClient);
-
+            while (true)
+            {
+                GetRequest(newClient);
+            }
             newClient.Close();
         }
 
         public void GetRequest(TcpClient client)
         {
+            request = string.Empty;
             while ((count = client.GetStream().Read(buffer, 0, buffer.Length)) > 0)
             {
                 request += Encoding.UTF8.GetString(buffer, 0, count);
@@ -45,30 +45,6 @@ namespace I7000Server
 
             string req = request.ToString();
 
-            string[] mas = req.Split(new string[] { "GET /?", "=", "&" }, StringSplitOptions.None);
-
-            if (req.Contains("favicon"))
-                return;
-
-            if (mas[1] != null && mas[1] == "portNumber")
-            {
-                mas = req.Split(new string[] { "GET /?portNumber=", "&speed=", "&" },
-                    StringSplitOptions.None);
-                int portNumber = 0;
-                int.TryParse(mas[1], out portNumber);
-                int speed = 0;
-                int.TryParse(mas[2], out speed);
-                OpenPort(portNumber, speed);
-                return;
-            }
-            if (mas[1] != null && mas[1] == "command")
-            {
-                mas = req.Split(new string[] { "GET /?command=", "&" },
-                   StringSplitOptions.None);
-                string command = mas[0];
-                Command(command);
-                return;
-            }         
 
             Match ReqMatch = Regex.Match(request.ToString(), @"^\w+\s+([^\s\?]+)[^\s]*\s+HTTP/.*|");
 
@@ -77,9 +53,34 @@ namespace I7000Server
                 SendError(client, 404);
                 return;
             }
-           
+
+            if (ReqMatch.Groups[0].Value.Contains("portNumber"))
+            {
+                string reqStr = ReqMatch.Groups[0].Value;
+                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+                int portNumber = 0;
+                int.TryParse(masStr[1], out portNumber);
+                int speed = 0;
+                int.TryParse(masStr[3], out speed);
+                OpenPort(portNumber, speed);
+                ///Отправка новой станицы? 
+                ///Открыть порт
+
+                return;
+            }else if (ReqMatch.Groups[0].Value.Contains("command"))
+            {
+                string reqStr = ReqMatch.Groups[0].Value;
+                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+
+                //Выполнить команду
+                return;
+            }
+            
+
             string reqUri = ReqMatch.Groups[1].Value;
             reqUri = Uri.UnescapeDataString(reqUri);
+
+
             if (reqUri.IndexOf("..") >= 0)
             {
                 SendError(client, 400);
@@ -90,6 +91,24 @@ namespace I7000Server
                 string path = Directory.GetCurrentDirectory();
                 path = path.Remove(path.IndexOf("\\bin")) + "\\i7000Control.html";
                 SendFile(client, path);
+                return;
+            }
+            if (reqUri.EndsWith("/favicon.ico"))
+            {
+                string path = Directory.GetCurrentDirectory();
+                path = path.Remove(path.IndexOf("\\bin")) + "\\favicon.ico";
+                SendFile(client, path);
+                return;
+            }
+            if (reqUri.EndsWith("/history.html"))
+            {
+                lock (fileHistryRead)
+                {
+                    string path = Directory.GetCurrentDirectory();
+                    path = path.Remove(path.IndexOf("\\bin")) + "\\history.html";
+                    SendFile(client, path);
+                }
+                return;
             }
         }
 
@@ -101,6 +120,8 @@ namespace I7000Server
         {
             if (speed == 0)
                 speed = 9600;
+            string path = Directory.GetCurrentDirectory();
+            History.WriteHistory(path.Remove(path.IndexOf("\\bin")) + "\\history.html", "Порт открыт");
 
         }
 

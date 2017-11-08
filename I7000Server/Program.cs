@@ -10,8 +10,8 @@ namespace I7000Server
             int thCount = Environment.ProcessorCount;
             if (thCount < 2)
                 thCount = 2;
-            ThreadPool.SetMaxThreads(thCount, thCount);
-            ThreadPool.SetMinThreads(2, 2);
+            ThreadPool.SetMaxThreads(5, 5);
+            ThreadPool.SetMinThreads(3, 3);
 
             Server srv = new Server(8080);
             srv.Start();
