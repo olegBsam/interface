@@ -144,57 +144,36 @@
 		
 		<script>
 			function Meander(button, values){
-				if(button.id == 'buttonMeandrHanded'){
-					google.charts.load('current', {'packages':['corechart']});
-					google.charts.setOnLoadCallback(drawChart);
-					var arr = values.split(' ');
-					var n = arr.length + 1;
-					var vals = [];
+				google.charts.load('current', {'packages':['corechart']});
+				google.charts.setOnLoadCallback(drawChart);
+				var arr = values.split(' ');
+				var n = arr.length + 1;
+				var vals = [];
+				
+				vals[0] = [];
 					
-					vals[0] = [];
-					
-					vals[0][0] = 'Время';
-					vals[0][1] = 'Значение';
+				vals[0][0] = 'Время';
+				vals[0][1] = 'Значение';
 
-					for(var i = 1; i < n; i++){
-						vals[i] = [];
+				for(var i = 1; i < n; i++){
+					vals[i] = [];
 						
-						vals[i][0] = (i-1).toString();
-						vals[i][1] = +arr[i-1];
-					}
+					vals[i][0] = (i-1).toString();
+					vals[i][1] = +arr[i-1];
+				}
 					
-					function drawChart() {
-						var data = google.visualization.arrayToDataTable(vals);
+				function drawChart() {
+					var data = google.visualization.arrayToDataTable(vals);
+					var options = (button.id == 'buttonMeandrHanded') ? 
+						{title: 'Ручной меандр', legend: { position: 'bottom' }} : 
+						{title: 'Автоматический меандр', legend: { position: 'bottom' }};
 
-						var options = {
-							title: 'Ручной меандр',
-							legend: { position: 'bottom' }
-						};
-
-						var chart = new google.visualization.LineChart(document.getElementById('chartHanded'));
-
-						chart.draw(data, options);
-					}
-				}
-				else{
-					google.charts.load('current', {'packages':['corechart']});
-					google.charts.setOnLoadCallback(drawChart);
-					function drawChart() {
-						var data = google.visualization.arrayToDataTable([
-						  ['Время', 'Значение'],
-						  ['0',  0]
-						]);
-
-						var options = {
-							title: 'Автоматический меандр',
-							legend: { position: 'bottom' }
-						};
-
-						var chart = new google.visualization.LineChart(document.getElementById('chartAuto'));
+					var chart = (button.id == 'buttonMeandrHanded') ?
+						new google.visualization.LineChart(document.getElementById('chartHanded')) :
+						new google.visualization.LineChart(document.getElementById('chartAuto'));
 
 						chart.draw(data, options);
 					}
-				}
 			}
 		</script>
 	
