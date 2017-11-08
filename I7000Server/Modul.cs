@@ -75,6 +75,32 @@ namespace I7000Server
             History.WriteHistory(msg + "<br>");
         }
 
+        public string BuildMeandre(string amp, string freq, string freqDigit)
+        {
+            StringBuilder sb = new StringBuilder();
+            //sb.Append('[');
+            //sb.Append(0.ToString());
+            //for (int i = 1; i < 5; i++)
+            //    sb.Append(", " + i.ToString());
+            //sb.Append("], ");
+
+            sb.Append('[');
+
+            sb.Append(5.ToString());
+            for (int i = 6; i < 10; i++)
+                sb.Append(", " + i.ToString());
+            sb.Append("]");
+
+            return sb.ToString();
+        }
+
+        public string ReadMeandre(string freqDigid)
+        {
+            StringBuilder sb = new StringBuilder();
+
+
+            return sb.ToString();
+        }
 
         public void openPort(string portName, string speed)
         {

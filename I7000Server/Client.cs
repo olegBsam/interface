@@ -47,6 +47,7 @@ namespace I7000Server
                     break;
             }
 
+
             Match ReqMatch = Regex.Match(request.ToString(), @"^\w+\s+([^\s\?]+)[^\s]*\s+HTTP/.*|");
 
             if (ReqMatch == Match.Empty)
@@ -57,7 +58,7 @@ namespace I7000Server
 
             //Кнопки
             if (ReqMatch.Groups[0].Value.Contains("portNumber"))
-            { 
+            {
                 try
                 {
                     string reqStr = ReqMatch.Groups[0].Value;
@@ -65,7 +66,7 @@ namespace I7000Server
                     Modul.GetModul.openPort(masStr[1], masStr[3]);
                     sendOK(client);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     sendNotOk(client, 425.ToString());
                 }
@@ -81,9 +82,43 @@ namespace I7000Server
                     Modul.GetModul.WriteToPort(masStr[1]);
                     sendOK(client);
                 }
-                catch(Exception e)
+                catch (Exception)
                 {
                     sendNotOk(client, 427.ToString());
+                }
+                return;
+            }
+            else if (ReqMatch.Groups[0].Value.Contains("frequency"))
+            {
+                try
+                {
+                    string reqStr = ReqMatch.Groups[0].Value;
+                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+
+                    string result = Modul.GetModul.BuildMeandre(masStr[1], masStr[3], masStr[5]);
+
+                    sendOK(client, result, result.Length);
+                }
+                catch (Exception)
+                {
+                    sendNotOk(client, 425.ToString());
+                }
+                return;
+            }
+            else if (ReqMatch.Groups[0].Value.Contains("auto"))
+            {
+                try
+                {
+                    string reqStr = ReqMatch.Groups[0].Value;
+                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+
+                    string result = Modul.GetModul.ReadMeandre(masStr[1]);
+
+                    sendOK(client, result, result.Length);
+                }
+                catch (Exception e)
+                {
+                    sendNotOk(client, 425.ToString());
                 }
                 return;
             }
@@ -123,10 +158,10 @@ namespace I7000Server
                 }
                 return;
             }
-#endregion
+            #endregion
         }
 
-       
+
 
         //Получение типов содержимого
         private void GetExtension(string extension, out string contentType)
@@ -159,7 +194,7 @@ namespace I7000Server
                     break;
             }
         }
-        
+
         //Отправка заголовка
         private void HeaderSending(TcpClient client, string contentType, FileStream fs)
         {
@@ -205,9 +240,9 @@ namespace I7000Server
             return true;
         }
 
-        private void sendOK(TcpClient client)
+        private void sendOK(TcpClient client,string mes = "200 OK", int len = 0)
         {
-            string headers = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 0\n\n";
+            string headers = "HTTP/1.1 "+ mes +"\nContent-Type: text/html\nContent-Length: " + len.ToString() + "\n\n";
             buffer = Encoding.UTF8.GetBytes(headers);
             client.GetStream().Write(buffer, 0, buffer.Length);
         }
