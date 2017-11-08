@@ -78,18 +78,10 @@ namespace I7000Server
         public string BuildMeandre(string amp, string freq, string freqDigit)
         {
             StringBuilder sb = new StringBuilder();
-            //sb.Append('[');
-            //sb.Append(0.ToString());
-            //for (int i = 1; i < 5; i++)
-            //    sb.Append(", " + i.ToString());
-            //sb.Append("], ");
 
-            sb.Append('[');
-
-            sb.Append(5.ToString());
+            sb.Append(5);
             for (int i = 6; i < 10; i++)
-                sb.Append(", " + i.ToString());
-            sb.Append("]");
+                sb.Append(' ' + i.ToString());
 
             return sb.ToString();
         }

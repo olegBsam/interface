@@ -66,7 +66,7 @@ namespace I7000Server
                     string reqStr = ReqMatch.Groups[0].Value;
                     string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
                     Modul.GetModul.openPort(masStr[1], masStr[3]);
-                    sendOK(client);
+                    SendMessage(client);
                 }
                 catch (Exception e)
                 {
@@ -82,7 +82,7 @@ namespace I7000Server
                 try
                 {
                     Modul.GetModul.WriteToPort(masStr[1]);
-                    sendOK(client);
+                    SendMessage(client);
                 }
                 catch (Exception)
                 {
@@ -98,17 +98,8 @@ namespace I7000Server
                     string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
 
                     string result = Modul.GetModul.BuildMeandre(masStr[1], masStr[3], masStr[5]);
-
-                    string html = result;
-                    //необходимые заголовки
-                    //ответ сервера, тип и длина содержимого.
-                    string pageStr = "HTTP/1.1 200 OK"+
-                        " \nContent-type: text/html\nContent-Length:" + html.Length.ToString() + "\n\n" + html;
-
-                    buffer = Encoding.UTF8.GetBytes(pageStr);
-                    client.GetStream().Write(buffer, 0, buffer.Length);
-
-                    sendOK(client, result, result.Length);
+                 
+                    SendMessage(client, len: result.Length, html: result);
                 }
                 catch (Exception)
                 {
@@ -125,7 +116,7 @@ namespace I7000Server
 
                     string result = Modul.GetModul.ReadMeandre(masStr[1]);
 
-                    sendOK(client, result, result.Length);
+                    SendMessage(client, result, result.Length);
                 }
                 catch (Exception e)
                 {
@@ -251,12 +242,15 @@ namespace I7000Server
             return true;
         }
 
-        private void sendOK(TcpClient client,string mes = "200 OK", int len = 0)
+
+        private void SendMessage(TcpClient client, string code = "200 OK", int len = 0, string html = "")
         {
-            string headers = "HTTP/1.1 "+ mes +"\nContent-Type: text/html\nContent-Length: 0\n\n";
-            buffer = Encoding.UTF8.GetBytes(headers);
+            string pageStr = "HTTP/1.1 " + code +
+                      " \nContent-type: text/html\nContent-Length:" + len.ToString() + "\n\n" + html;
+            buffer = Encoding.UTF8.GetBytes(pageStr);
             client.GetStream().Write(buffer, 0, buffer.Length);
         }
+
         private void sendNotOk(TcpClient client, string codeString)
         {
             try
