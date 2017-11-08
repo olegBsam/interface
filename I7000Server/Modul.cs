@@ -72,7 +72,7 @@ namespace I7000Server
 
         public void addHistoryMessage(string msg)
         {
-            History.WriteHistory(msg);
+            History.WriteHistory("<p>" + msg + "</p>");
         }
 
 
