@@ -11,7 +11,17 @@
 					var number = $("#portNumber").val(); 
 					return (number.length != 0 && number >= 0); 
 				} 
-				return ($("#command").val().length != 0); 
+				if(form == 'formCommand'){
+					return ($("#command").val().length != 0); 
+				}
+				
+				var frequency = $("#frequency").val();
+				var amplitude = $("#amplitude").val();
+				var samplingFrequency = $("#samplingFrequency").val();
+				var lenghter = (frequency.length != 0 && amplitude.length != 0 && samplingFrequency.length != 0);
+				var moreThenZero = (frequency > 0 && amplitude > 0 && samplingFrequency > 0);
+				
+				return (lenghter && moreThenZero);
 			} 
 		</script> 
 		
@@ -30,7 +40,7 @@
 						$('#frame').attr('src', $('#frame').attr('src'));
                     },
                     error: function(err){
-                        alert(Ошибка);
+                        alert('Ошибка');
                     }
 				})
 				return false;
@@ -71,8 +81,7 @@
 			
 			#curve_chart {
 				position: absolute;
-				top: 50px; /* Расстояние от верхнего края */
-				left: 330px; /* Расстояние от левого края */
+				left: -110px; /* Расстояние от левого края */
 				width: 900px; 
 				height: 500px;
 			}
@@ -90,7 +99,8 @@
 				<option value="2400">2400</option>
 				<option value="1200">1200</option>
 			</select></p> 
-			<input id="button" type="button" value="Открыть порт" onclick="AjaxFormRequest('formPort')"/> 
+			<input id="openPort" type="button" value="Открыть порт" onclick="AjaxFormRequest('formPort')"/>
+			<input id="closePort" type="button" value="Закрыть порт" onclick="AjaxFormRequest('formPort')"/> 
 		</form> 
 		
 		<form method="get" action="" id="formCommand"> 
@@ -104,8 +114,17 @@
 		<div id="content">
 			<h2>Меандр</h2>
 			
+			<form method="get" action="" id="formMeandr"> 
+				<input id="frequency" type="number" name="frequency" placeholder="Частота" maxlength="5" autocomplete="off" /> 
+				<input id="amplitude" type="number" name="amplitude" placeholder="Амплитуда" maxlength="5" autocomplete="off" /> 
+				<input id="samplingFrequency" type="number" name="samplingFrequency" placeholder="Частота дискретизации" maxlength="5" autocomplete="off" /> 
+				
+				<input id="buttonMeandrHanded" type="button" value="Построить меандр" onclick="AjaxFormRequest('formMeandr')"/> 
+				<input id="buttonMeandrAutomatic" type="button" value="Получить меандр" onclick="AjaxFormRequest('formMeandr')"/> 
+			</form> 
+			
+			<div id="curve_chart"</div>
 		</div>
 		
-		<div id="curve_chart"</div>
 	</body> 
 	</html>

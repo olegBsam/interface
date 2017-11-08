@@ -55,7 +55,7 @@ namespace I7000Server
             if (ReqMatch.Groups[0].Value.Contains("portNumber"))
             {
                 string reqStr = ReqMatch.Groups[0].Value;
-                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries); ;
+                string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
                 try
                 {
                     Modul.GetModul.openPort(masStr[1], masStr[3]);
@@ -215,7 +215,10 @@ namespace I7000Server
 
         private void SendError(TcpClient client, int code = 0, string codeString = null)
         {
-            try
+            string headers = "HTTP/1.1 400 Bad Request\nContent-Type: text/html\nContent-Length: 0\n\n";
+            buffer = Encoding.UTF8.GetBytes(headers);
+            client.GetStream().Write(buffer, 0, buffer.Length);
+            /*try
             {
                 if (codeString == null)
                     codeString = code.ToString() + " " + ((HttpStatusCode)code).ToString();
@@ -229,14 +232,14 @@ namespace I7000Server
                 buffer = Encoding.UTF8.GetBytes(pageStr);
                 client.GetStream().Write(buffer, 0, buffer.Length);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 Console.WriteLine("Error!");
             }
             finally
             {
                 client.Close();
-            }
+            }*/
         }
     }
 }
