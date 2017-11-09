@@ -80,16 +80,23 @@ namespace I7000Server
             StringBuilder sb = new StringBuilder();
 
             sb.Append(1);
+            sb.Append(" " + -5);
+
+            sb.Append(" " + 1);
+            sb.Append(" " + 5);
+
+
             sb.Append(" " + 2);
+            sb.Append(" " + 5);
+
+            sb.Append(" " + 2);
+            sb.Append(" " + -5);
 
             sb.Append(" " + 3);
-            sb.Append(" " + 4);
-
-            sb.Append(" " + 4);
-            sb.Append(" " + 4);
-
             sb.Append(" " + 5);
-            sb.Append(" " + 6);
+
+            sb.Append(" " + 4);
+            sb.Append(" " + -5);
 
             return sb.ToString();
         }
