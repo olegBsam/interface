@@ -67,6 +67,7 @@ namespace I7000Server
             reqUri = Uri.UnescapeDataString(reqUri);
 
             #region SendPage();
+            string path = Directory.GetCurrentDirectory();
             if (reqUri.IndexOf("..") >= 0)
             {
                 SendError(400);
@@ -74,32 +75,40 @@ namespace I7000Server
             }
             if (reqUri.EndsWith("/"))
             {
-                string path = Directory.GetCurrentDirectory();
-                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\i7000Control.html");
+                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\client\\i7000Control.html");
                 return;
             }
             if (reqUri.EndsWith("/favicon.ico"))
             {
-                string path = Directory.GetCurrentDirectory();
-                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\favicon.ico");
+                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\client\\favicon.ico");
                 return;
             }
-            if (reqUri.EndsWith("/history.html"))
+            if (reqUri.EndsWith("/client/history.html"))
             {
                 lock (fileHistryRead)
                 {
-                    string path = Directory.GetCurrentDirectory();
-                    SendFile(path.Remove(path.IndexOf("\\bin")) + "\\history.html");
+                    SendFile(path.Remove(path.IndexOf("\\bin")) + "\\client\\history.html");
                 }
                 return;
             }
-            if (reqUri.EndsWith("/validator.js"))
+            if (reqUri.EndsWith("/client/validator.js"))
             {
-                lock (fileHistryRead)
-                {
-                    string path = Directory.GetCurrentDirectory();
-                    SendFile(path.Remove(path.IndexOf("\\bin")) + "\\validator.js");
-                }
+                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\client\\validator.js");
+                return;
+            }
+            if (reqUri.EndsWith("/client/css/styles.css"))
+            {
+                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\client\\css\\styles.css");
+                return;
+            }
+            if (reqUri.EndsWith("/client/scripts.js"))
+            {
+                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\client\\scripts.js");
+                return;
+            }
+            if (reqUri.EndsWith("/client/meandr.js"))
+            {
+                SendFile(path.Remove(path.IndexOf("\\bin")) + "\\client\\meandr.js");
                 return;
             }
             #endregion
@@ -142,10 +151,17 @@ namespace I7000Server
         {
             SendMessage(len: fs.Length.ToString(), contentType: contentType);
 
-            while (fs.Position < fs.Length)
+            try
             {
-                count = fs.Read(buffer, 0, buffer.Length);
-                CurrentClient.GetStream().Write(buffer, 0, count);
+                while (fs.Position < fs.Length)
+                {
+                    count = fs.Read(buffer, 0, buffer.Length);
+                    CurrentClient.GetStream().Write(buffer, 0, count);
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error!");
             }
         }
 

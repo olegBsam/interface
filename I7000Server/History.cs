@@ -13,7 +13,7 @@ namespace I7000Server
         static History()
         {
             string str = Directory.GetCurrentDirectory();
-            path = str.Remove(str.IndexOf("\\bin")) + "\\history.html";
+            path = str.Remove(str.IndexOf("\\bin")) + "\\client\\history.html";
         }
         
         public static void WriteHistory(string message)

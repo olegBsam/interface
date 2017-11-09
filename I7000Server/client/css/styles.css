@@ -1,0 +1,63 @@
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+
+input.invalid {
+    background-color: rgba(255,0,0,.1)
+}
+
+textarea { resize: none; }
+
+#content {
+    position: absolute;
+    top: -20px; /* Расстояние от верхнего края */
+    left: 460px; /* Расстояние от левого края */ 
+    width: 600px;
+}
+
+#chartHanded {
+    position: absolute;
+    left: -110px; /* Расстояние от левого края */
+    width: 900px; 
+    height: 500px;
+}
+
+#chartAuto {
+    position: absolute;
+    left: -110px; /* Расстояние от левого края */
+    width: 900px; 
+    height: 500px;
+    top: 630px;
+}
+
+#errorFrequency {
+    position: absolute;
+    left : 165px;
+    top: 52px;
+}
+
+#errorAmplitude {
+    position: absolute;
+    left : 165px;
+    top: 90px;
+}
+
+#errorSamplingFrequency {
+    position: absolute;
+    left : 165px;
+    top: 126px;
+}
+
+#errorPort {
+    position: absolute;
+    left : 175px;
+    top: -8px;
+}
+
+#errorCommand {
+    position: absolute;
+    left : 175px;
+    top: 203px;
+}

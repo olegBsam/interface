@@ -1,0 +1,62 @@
+﻿<html> 
+	<head> 
+		<meta charset="utf-8"> 
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+		<script src="http://malsup.github.com/jquery.form.js"></script> 
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<link rel="stylesheet" href="/client/css/styles.css">
+		
+		<script src ="/client/validator.js"></script> 
+		<script src ="/client/scripts.js"></script> 		
+		<script src="client/meandr.js"></script>
+	</head> 
+
+	<body> 
+		<form method="get" action="" id="formPort"> 
+			<input id="portNumber" type="number" name="portNumber" placeholder="Номер порта" maxlength="30" autocomplete="off" />
+			<p id="errorPort" style="color:red; display:none;"></p>
+			<p>Скорость:</p> 
+			<p><select name="speed" id = "speed" size="5">
+				<option value="19200">19200</option>
+				<option selected="selected" value="9600">9600</option>
+				<option value="4800">4800</option>
+				<option value="2400">2400</option>
+				<option value="1200">1200</option>
+			</select></p> 
+			<input id="openPort" type="button" value="Открыть порт" onclick="AjaxFormRequest('formPort', this)"/>
+			<input id="closePort" type="button" value="Закрыть порт" disabled="true" onclick="AjaxFormRequest('', this)"/> 
+		</form> 
+		
+		<form method="get" action="" id="formCommand"> 
+			<p><input id="command" type="text" name="command" placeholder="Команда" disabled="true" maxlength="50" autocomplete="off" /> </p>
+			<p id="errorCommand" style="color:red; display:none;">Неверная длина команды.</p>
+			<input id="buttonCommand" type="button" value="Отправить команду" disabled="true" onclick="AjaxFormRequest('formCommand', this)"/> 
+		</form> 
+
+		<p>История команд:</p> 
+		<iframe src="http://127.0.0.1:8080/client/history.html" id="frame"> </iframe>
+		
+		<div id="content">
+			<h2>Меандр</h2>
+			
+			<form method="get" action="" id="formMeandrHanded"> 
+				<p> <input id="frequency" type="number" name="frequency" placeholder="Частота" maxlength="5" autocomplete="off" disabled="true"/> </p>
+				<p id="errorFrequency" style="color:red; display:none;"></p>
+				<p> <input id="amplitude" type="number" name="amplitude" placeholder="Амплитуда" maxlength="5" autocomplete="off" disabled="true"/> </p>
+				<p id="errorAmplitude" style="color:red; display:none;"></p>
+				<p> <input id="samplingFrequency" type="number" name="samplingFrequency" placeholder="Частота дискретизации" maxlength="5" autocomplete="off" disabled="true"/> </p>
+				<p id="errorSamplingFrequency" style="color:red; display:none;"></p>
+				<p> <input id="buttonMeandrHanded" type="button" value="Построить меандр" onclick="AjaxFormRequest('formMeandrHanded', this)" disabled="true"/> </p>
+			</form> 
+			
+			<form method="get" action="" id="formMeandrAuto"> 
+				<input id="auto" type="number" name="auto" style="display:none;"/> 
+				<input id="buttonMeandrAutomatic" type="button" value="Получить меандр" onclick="AjaxFormRequest('formMeandrAuto', this)" disabled="true"/> 
+			</form> 
+			
+			<div id="chartHanded"></div>
+			<div id="chartAuto"></div>
+		</div>
+		
+	</body> 
+</html>
