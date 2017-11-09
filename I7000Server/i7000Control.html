@@ -5,25 +5,27 @@
 		<script src="http://malsup.github.com/jquery.form.js"></script> 
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		
+		<script src ="validator.js"></script> 
+		
 		<script> 
 			function checkValidation(form){ 
 				if(form == 'formPort'){ 
-					var number = $("#portNumber").val(); 
-					return (number.length != 0 && number >= 0); 
+					$('#portNumber').keyup();
+					return (document.getElementById("portNumber").getAttribute("class") != "invalid");
 				} 
+				
 				if(form == 'formCommand'){
-					return ($("#command").val().length != 0); 
+					$('#command').keyup();
+					return (document.getElementById("command").getAttribute("class") != "invalid");
 				}
 				
 				if(form == 'formMeandrHanded'){
-					var frequency = $("#frequency").val();
-					var amplitude = $("#amplitude").val();
-					var samplingFrequency = $("#samplingFrequency").val();
-					var lenghter = (frequency.length != 0 && amplitude.length != 0 && samplingFrequency.length != 0);
-					var moreThenZero = (frequency > 0 && amplitude > 0 && samplingFrequency > 0);
-					
-					var e = document.getElementById('speed')
-					return (lenghter && moreThenZero && samplingFrequency < e.options[e.selectedIndex].value);
+					$('#frequency').keyup();
+					$('#amplitude').keyup();
+					$('#samplingFrequency').keyup();
+					return ((document.getElementById("frequency").getAttribute("class") != "invalid") && 
+						(document.getElementById("amplitude").getAttribute("class") != "invalid") && 
+						(document.getElementById("samplingFrequency").getAttribute("class") != "invalid"));
 				}
 				
 				return true;
@@ -178,6 +180,16 @@
 		</script>
 	
 		<style type="text/css">
+			input[type=number]::-webkit-inner-spin-button, 
+			input[type=number]::-webkit-outer-spin-button { 
+				-webkit-appearance: none; 
+				margin: 0; 
+			}
+
+			input.invalid {
+				background-color: rgba(255,0,0,.1)
+			}
+			
 			textarea { resize: none; }
 			#content {
 				position: absolute;
@@ -201,7 +213,7 @@
 			}
 		</style>
 	</head> 
-	
+
 	<body> 
 		<form method="get" action="" id="formPort"> 
 			<input id="portNumber" type="number" name="portNumber" placeholder="Номер порта" maxlength="30" autocomplete="off" />
@@ -214,7 +226,7 @@
 				<option value="1200">1200</option>
 			</select></p> 
 			<input id="openPort" type="button" value="Открыть порт" onclick="AjaxFormRequest('formPort', this)"/>
-			<input id="closePort" type="button" value="Закрыть порт" disabled="true" onclick="AjaxFormRequest('formPort', this)"/> 
+			<input id="closePort" type="button" value="Закрыть порт" disabled="true" onclick="AjaxFormRequest('', this)"/> 
 		</form> 
 		
 		<form method="get" action="" id="formCommand"> 
