@@ -5,25 +5,27 @@
 		<script src="http://malsup.github.com/jquery.form.js"></script> 
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		
+		<script src ="validator.js"></script> 
+		
 		<script> 
 			function checkValidation(form){ 
 				if(form == 'formPort'){ 
-					var number = $("#portNumber").val(); 
-					return (number.length != 0 && number >= 0); 
+					$('#portNumber').keyup();
+					return (document.getElementById("portNumber").getAttribute("class") != "invalid");
 				} 
+				
 				if(form == 'formCommand'){
-					return ($("#command").val().length != 0); 
+					$('#command').keyup();
+					return (document.getElementById("command").getAttribute("class") != "invalid");
 				}
 				
 				if(form == 'formMeandrHanded'){
-					var frequency = $("#frequency").val();
-					var amplitude = $("#amplitude").val();
-					var samplingFrequency = $("#samplingFrequency").val();
-					var lenghter = (frequency.length != 0 && amplitude.length != 0 && samplingFrequency.length != 0);
-					var moreThenZero = (frequency > 0 && amplitude > 0 && samplingFrequency > 0);
-					
-					var e = document.getElementById('speed')
-					return (lenghter && moreThenZero && samplingFrequency < e.options[e.selectedIndex].value);
+					$('#frequency').keyup();
+					$('#amplitude').keyup();
+					$('#samplingFrequency').keyup();
+					return ((document.getElementById("frequency").getAttribute("class") != "invalid") && 
+						(document.getElementById("amplitude").getAttribute("class") != "invalid") && 
+						(document.getElementById("samplingFrequency").getAttribute("class") != "invalid"));
 				}
 				
 				return true;
@@ -144,61 +146,50 @@
 		
 		<script>
 			function Meander(button, values){
-				if(button.id == 'buttonMeandrHanded'){
-					google.charts.load('current', {'packages':['corechart']});
-					google.charts.setOnLoadCallback(drawChart);
-					var arr = values.split(' ');
-					var n = arr.length + 1;
-					var vals = [];
+				google.charts.load('current', {'packages':['corechart']});
+				google.charts.setOnLoadCallback(drawChart);
+				var arr = values.split(' ');
+				var n = arr.length + 1;
+				var vals = [];
+				
+				vals[0] = [];
 					
-					vals[0] = [];
-					
-					vals[0][0] = 'Время';
-					vals[0][1] = 'Значение';
+				vals[0][0] = 'Время';
+				vals[0][1] = 'Значение';
 
-					for(var i = 1; i < n; i+=2){
-						vals[i] = [];
+				for(var i = 1; i < n; i++){
+					vals[i] = [];
 						
-						vals[i][0] = (i-1).toString();
-						vals[i][1] = +arr[i-1];
-					}
+					vals[i][0] = (i-1).toString();
+					vals[i][1] = +arr[i-1];
+				}
 					
-					function drawChart() {
-						var data = google.visualization.arrayToDataTable(vals);
+				function drawChart() {
+					var data = google.visualization.arrayToDataTable(vals);
+					var options = (button.id == 'buttonMeandrHanded') ? 
+						{title: 'Ручной меандр', legend: { position: 'bottom' }} : 
+						{title: 'Автоматический меандр', legend: { position: 'bottom' }};
 
-						var options = {
-							title: 'Ручной меандр',
-							legend: { position: 'bottom' }
-						};
-
-						var chart = new google.visualization.LineChart(document.getElementById('chartHanded'));
-
-						chart.draw(data, options);
-					}
-				}
-				else{
-					google.charts.load('current', {'packages':['corechart']});
-					google.charts.setOnLoadCallback(drawChart);
-					function drawChart() {
-						var data = google.visualization.arrayToDataTable([
-						  ['Время', 'Значение'],
-						  ['0',  0]
-						]);
-
-						var options = {
-							title: 'Автоматический меандр',
-							legend: { position: 'bottom' }
-						};
-
-						var chart = new google.visualization.LineChart(document.getElementById('chartAuto'));
+					var chart = (button.id == 'buttonMeandrHanded') ?
+						new google.visualization.LineChart(document.getElementById('chartHanded')) :
+						new google.visualization.LineChart(document.getElementById('chartAuto'));
 
 						chart.draw(data, options);
 					}
-				}
 			}
 		</script>
 	
 		<style type="text/css">
+			input[type=number]::-webkit-inner-spin-button, 
+			input[type=number]::-webkit-outer-spin-button { 
+				-webkit-appearance: none; 
+				margin: 0; 
+			}
+
+			input.invalid {
+				background-color: rgba(255,0,0,.1)
+			}
+			
 			textarea { resize: none; }
 			#content {
 				position: absolute;
@@ -222,7 +213,7 @@
 			}
 		</style>
 	</head> 
-	
+
 	<body> 
 		<form method="get" action="" id="formPort"> 
 			<input id="portNumber" type="number" name="portNumber" placeholder="Номер порта" maxlength="30" autocomplete="off" />
@@ -235,7 +226,7 @@
 				<option value="1200">1200</option>
 			</select></p> 
 			<input id="openPort" type="button" value="Открыть порт" onclick="AjaxFormRequest('formPort', this)"/>
-			<input id="closePort" type="button" value="Закрыть порт" disabled="true" onclick="AjaxFormRequest('formPort', this)"/> 
+			<input id="closePort" type="button" value="Закрыть порт" disabled="true" onclick="AjaxFormRequest('', this)"/> 
 		</form> 
 		
 		<form method="get" action="" id="formCommand"> 

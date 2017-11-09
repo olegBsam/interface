@@ -93,6 +93,15 @@ namespace I7000Server
                 }
                 return;
             }
+            if (reqUri.EndsWith("/validator.js"))
+            {
+                lock (fileHistryRead)
+                {
+                    string path = Directory.GetCurrentDirectory();
+                    SendFile(path.Remove(path.IndexOf("\\bin")) + "\\validator.js");
+                }
+                return;
+            }
             #endregion
         }
 
