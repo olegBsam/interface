@@ -42,13 +42,21 @@ namespace I7000Server
         public void GetRequest()
         {
             request = string.Empty;
-            while ((count = CurrentClient.GetStream().Read(buffer, 0, buffer.Length)) > 0)
-            {
-                request += Encoding.UTF8.GetString(buffer, 0, count);
-                if (request.IndexOf("\r\n\r\n") >= 0 || request.Length > 4096) //\r\n\r\n - конец запроса, иначе принимаем не более 4Кб
-                    break;
-            }
 
+            try
+            {
+                while ((count = CurrentClient.GetStream().Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    request += Encoding.UTF8.GetString(buffer, 0, count);
+                    if (request.IndexOf("\r\n\r\n") >= 0 || request.Length > 4096) //\r\n\r\n - конец запроса, иначе принимаем не более 4Кб
+                        break;
+                }
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Ошибка приема сообщения от клиента: {0}", e.Message);
+                return;
+            }
 
             Match reqMatch = Regex.Match(request.ToString(), @"^\w+\s+([^\s\?]+)[^\s]*\s+HTTP/.*|");
 
@@ -65,8 +73,12 @@ namespace I7000Server
             //Запросы страниц
             string reqUri = reqMatch.Groups[1].Value;
             reqUri = Uri.UnescapeDataString(reqUri);
+            RequestOnPage(reqUri);
+        }
 
-            #region SendPage();
+        //Запросы на страницы
+        private void RequestOnPage(string reqUri)
+        {
             string path = Directory.GetCurrentDirectory();
             if (reqUri.IndexOf("..") >= 0)
             {
@@ -111,7 +123,6 @@ namespace I7000Server
                 SendFile(path.Remove(path.IndexOf("\\bin")) + "\\client\\meandr.js");
                 return;
             }
-            #endregion
         }
 
         //Получение типов содержимого
@@ -159,12 +170,11 @@ namespace I7000Server
                     CurrentClient.GetStream().Write(buffer, 0, count);
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("Error!");
+                Console.WriteLine("Ошибка отправки ответа клиенту: {0}", e.Message);
             }
         }
-
 
         //Отправка файла с заголовком (страниц)
         public bool SendFile(string path)
@@ -184,9 +194,10 @@ namespace I7000Server
                 fileStream = new FileStream(path, FileMode.Open, FileAccess.Read,
                     FileShare.Read);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 SendError(500);
+                Console.WriteLine("Ошибка чтения файла на сервере: {0}", e.Message);
                 return false;
             }
 
@@ -194,30 +205,38 @@ namespace I7000Server
             fileStream.Close();
             return true;
         }
-
         private void SendMessage(string code = "200 OK", string len = "0", string html = "", string contentType = "text/html")
         {
+
             string pageStr = "HTTP/1.1 " + code +
                       " \nContent-type: " + contentType + "\nContent-Length:" + len + "\n\n" + html;
             buffer = Encoding.UTF8.GetBytes(pageStr);
-            CurrentClient.GetStream().Write(buffer, 0, buffer.Length);
-        }
+
+            try
+            {
+                CurrentClient.GetStream().Write(buffer, 0, buffer.Length);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Ошибка отправки ответа клиенту: {0}", e.Message);
+            }
+}
 
         //Отправка кода ошибки
         private void SendError(int code = 0, string codeString = null)
         {
+            if (codeString == null)
+                codeString = code.ToString() + " " + ((HttpStatusCode)code).ToString();
+            //Страница с ошибкой
+            string html = "<html><body><h1>" + codeString + "</h1></body></html>";
             try
             {
-                if (codeString == null)
-                    codeString = code.ToString() + " " + ((HttpStatusCode)code).ToString();
-                //Страница с ошибкой
-                string html = "<html><body><h1>" + codeString + "</h1></body></html>";
                 //необходимые заголовки
                 SendMessage(codeString, html.Length.ToString(), html: html);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("Error!");
+                Console.WriteLine("Ошибка отправки сообщения об ошибке: {0}", e.Message);
             }
             finally
             {
