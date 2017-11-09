@@ -49,6 +49,7 @@ namespace I7000Server
                     break;
             }
 
+
             Match reqMatch = Regex.Match(request.ToString(), @"^\w+\s+([^\s\?]+)[^\s]*\s+HTTP/.*|");
 
             if (reqMatch == Match.Empty)

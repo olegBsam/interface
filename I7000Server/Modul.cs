@@ -79,9 +79,17 @@ namespace I7000Server
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(5);
-            for (int i = 6; i < 10; i++)
-                sb.Append(' ' + i.ToString());
+            sb.Append(1);
+            sb.Append(" " + 2);
+
+            sb.Append(" " + 3);
+            sb.Append(" " + 4);
+
+            sb.Append(" " + 4);
+            sb.Append(" " + 4);
+
+            sb.Append(" " + 5);
+            sb.Append(" " + 6);
 
             return sb.ToString();
         }
@@ -89,6 +97,8 @@ namespace I7000Server
         public string ReadMeandre(string freqDigid)
         {
             StringBuilder sb = new StringBuilder();
+
+
 
 
             return sb.ToString();
