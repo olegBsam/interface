@@ -106,10 +106,16 @@ $(document).ready(function() {
 			document.getElementById("errorSamplingFrequency").innerHTML = "Максимальное значение частоты дискретизации - 1000.";
 			document.getElementById("errorSamplingFrequency").style.display = "block";
 		}
+		else if (variable < 2*document.getElementById("frequency").value){
+			$(this).addClass('invalid');
+			document.getElementById("errorSamplingFrequency").innerHTML = "Частота дискретизации должна быть более чем в 2 раза больше чатоты сигнала.";
+			document.getElementById("errorSamplingFrequency").style.display = "block";
+		}
 		else{
 			$(this).removeClass('invalid');
 			document.getElementById("errorSamplingFrequency").style.display = "none";
 		}
+		
 	});
 	
 	$('input').keyup();
