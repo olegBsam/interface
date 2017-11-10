@@ -25,8 +25,8 @@
 			</select></p> 
 			<input id="openPort" type="button" value="Открыть порт" onclick="AjaxFormRequest('formPort', this)"/>
 			<input id="closePort" type="button" value="Закрыть порт" disabled="true" onclick="AjaxFormRequest('', this)"/> 
-		</form> 
-		
+		</form>
+
 		<form method="get" action="" id="formCommand"> 
 			<p><input id="command" type="text" name="command" placeholder="Команда" disabled="true" maxlength="50" autocomplete="off" /> </p>
 			<p id="errorCommand" style="color:red; display:none;">Неверная длина команды.</p>
@@ -39,20 +39,22 @@
 		<div id="content">
 			<h2>Меандр</h2>
 			
-			<form method="get" action="" id="formMeandrHanded"> 
+			<form method="get" action="" id="formMeandr"> 
+				<input id="adressADC" type="number" name="adressADC" placeholder="Адрес АЦП" disabled="true" maxlength="30" autocomplete="off"/>
+				<input id="adressDAC" type="number" name="adressDAC" placeholder="Адрес ЦАП" disabled="true" maxlength="30" autocomplete="off"/>
+				<p id="errorAdressADC" style="color:red; display:none;">Неверная длина команды.</p>
+				<p id="errorAdressDAC" style="color:red; display:none;">Неверная длина команды.</p>
+				<!--<input id="sendAdress" type="button" value="Выбрать устройство" disabled="true" onclick="AjaxFormRequest('formMeandr')"/>-->		
 				<p> <input id="frequency" type="number" name="frequency" placeholder="Частота" maxlength="5" autocomplete="off" disabled="true"/> </p>
 				<p id="errorFrequency" style="color:red; display:none;"></p>
 				<p> <input id="amplitude" type="number" name="amplitude" placeholder="Амплитуда" maxlength="5" autocomplete="off" disabled="true"/> </p>
 				<p id="errorAmplitude" style="color:red; display:none;"></p>
 				<p> <input id="samplingFrequency" type="number" name="samplingFrequency" placeholder="Частота дискретизации" maxlength="5" autocomplete="off" disabled="true"/> </p>
 				<p id="errorSamplingFrequency" style="color:red; display:none;"></p>
-				<p> <input id="buttonMeandrHanded" type="button" value="Построить меандр" onclick="AjaxFormRequest('formMeandrHanded', this)" disabled="true"/> </p>
-			</form> 
-			
-			<form method="get" action="" id="formMeandrAuto"> 
-				<input id="auto" type="number" name="auto" style="display:none;"/> 
-				<input id="buttonMeandrAutomatic" type="button" value="Получить меандр" onclick="AjaxFormRequest('formMeandrAuto', this)" disabled="true"/> 
-			</form> 
+				<p>Ручной меандр<input checked="checked" id="handed" name="handed" disabled="true" type="checkbox" value="Ручной"></p>				
+				<br> <input id="buttonMeandr" type="button" value="Построить меандр" disabled="true" onclick="AjaxFormRequest('formMeandr')" disabled="true"/> </br>
+				<br>
+			</form>
 			
 			<div id="chartHanded"></div>
 			<div id="chartAuto"></div>

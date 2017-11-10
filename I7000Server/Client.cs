@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Web;
 
 namespace I7000Server
 {
@@ -45,6 +41,7 @@ namespace I7000Server
 
             try
             {
+                CurrentClient.ReceiveTimeout = 5;
                 while ((count = CurrentClient.GetStream().Read(buffer, 0, buffer.Length)) > 0)
                 {
                     request += Encoding.UTF8.GetString(buffer, 0, count);
@@ -254,7 +251,7 @@ namespace I7000Server
                 {
                     string reqStr = reqMatch.Groups[0].Value;
                     string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
-                    Modul.GetModul.openPort(masStr[1], masStr[3]);
+                    Module.GetModul.openPort(masStr[1], masStr[3]);
                     SendMessage();
                 }
                 catch (Exception)
@@ -270,7 +267,7 @@ namespace I7000Server
 
                 try
                 {
-                    Modul.GetModul.WriteToPort(masStr[1]);
+                    Module.GetModul.WriteToPort(masStr[1]);
                     SendMessage();
                 }
                 catch (Exception)
@@ -286,7 +283,7 @@ namespace I7000Server
                     string reqStr = reqMatch.Groups[0].Value;
                     string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
 
-                    string result = Modul.GetModul.BuildMeandre(masStr[1], masStr[3], masStr[5]);
+                    string result = Module.GetModul.BuildMeandre(masStr[1], masStr[3], masStr[5]);
 
                     SendMessage(len: result.Length.ToString(), html: result);
                 }
@@ -303,7 +300,7 @@ namespace I7000Server
                     string reqStr = reqMatch.Groups[0].Value;
                     string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
 
-                    string result = Modul.GetModul.ReadMeandre(masStr[1]);
+                    string result = Module.GetModul.ReadMeandre(masStr[1]);
 
                     SendMessage(result, result.Length.ToString());
                 }

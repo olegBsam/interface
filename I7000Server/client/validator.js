@@ -29,6 +29,30 @@ $(document).ready(function() {
 		}
 	});
 	
+	$("#adressADC").keyup(function(){
+		var variable = $(this).val();
+		if (variable.length == 0){
+			$(this).addClass('invalid');
+			document.getElementById("errorAdressADC").style.display = "block";
+		}
+		else{
+			$(this).removeClass('invalid');
+			document.getElementById("errorAdressADC").style.display = "none";
+		}
+	});
+
+	$("#adressDAC").keyup(function(){
+		var variable = $(this).val();
+		if (variable.length == 0){
+			$(this).addClass('invalid');
+			document.getElementById("errorAdressDAC").style.display = "block";
+		}
+		else{
+			$(this).removeClass('invalid');
+			document.getElementById("errorAdressDAC").style.display = "none";
+		}
+	});
+
 	$("#frequency").keyup(function(){
 		var variable = $(this).val();
 		if (variable.length == 0){
@@ -102,14 +126,13 @@ function checkValidation(form){
 		return (document.getElementById("command").getAttribute("class") != "invalid");
 	}
 	
-	if(form == 'formMeandrHanded'){
-		$('#frequency').keyup();
-		$('#amplitude').keyup();
-		$('#samplingFrequency').keyup();
-		return ((document.getElementById("frequency").getAttribute("class") != "invalid") && 
-			(document.getElementById("amplitude").getAttribute("class") != "invalid") && 
-			(document.getElementById("samplingFrequency").getAttribute("class") != "invalid"));
-	}
-	
-	return true;
+	$('#frequency').keyup();
+	$('#amplitude').keyup();
+	$('#samplingFrequency').keyup();
+	$("#adressADC").keyup();
+	$("#adressDAC").keyup();
+	return ((document.getElementById("frequency").getAttribute("class") != "invalid") && 
+		(document.getElementById("amplitude").getAttribute("class") != "invalid") && 
+		(document.getElementById("adressADC").getAttribute("class") != "invalid") &&
+		(document.getElementById("adressDAC").getAttribute("class") != "invalid"));
 } 

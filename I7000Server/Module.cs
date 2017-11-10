@@ -4,24 +4,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace I7000Server
 {
-    class Modul
+    class Module
     {
         private SerialPort comPort = null;
 
-        public static Modul GetModul = null;
+        public static Module GetModul = null;
 
         public static void CreateModul()
         {
             if (GetModul == null)
             {
-                GetModul = new Modul();
+                GetModul = new Module();
             }
         }
 
-        private Modul()
+        private Module()
         {
             while (comPort != null) ;
             comPort = new SerialPort();
@@ -75,30 +76,86 @@ namespace I7000Server
             History.WriteHistory(msg + "<br>");
         }
 
-        public string BuildMeandre(string amp, string freq, string freqDigit)
+        private string FormatedOutputMeandr(double[] time, double[] value)
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(1);
-            sb.Append(" " + -5);
+            if((time.Length == value.Length) && time.Length > 0)
+            {
+                sb.Append(time[0]);
+                sb.Append(" " + value[0]);
 
-            sb.Append(" " + 1);
-            sb.Append(" " + 5);
-
-
-            sb.Append(" " + 2);
-            sb.Append(" " + 5);
-
-            sb.Append(" " + 2);
-            sb.Append(" " + -5);
-
-            sb.Append(" " + 3);
-            sb.Append(" " + 5);
-
-            sb.Append(" " + 4);
-            sb.Append(" " + -5);
-
+                for(int i = 1; i < time.Length; i++)
+                {
+                    sb.Append(" " + time[i]);
+                    sb.Append(" " + value[i]);
+                }
+            }
             return sb.ToString();
+        }
+
+        public async Task<int> SendLvl(object amp)
+        {
+            string s = DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff");
+            Console.WriteLine(c++ + '.' + s);
+
+            //double A = 0;
+            //double.TryParse(amp.ToString() , out A);
+            return 1;
+        }
+
+        volatile int c;
+
+        public string BuildMeandre(string amp, string freq, string freqDigit)
+        {
+            ////кол-во периодов
+            //int count = 10;
+            ////Амплитуда колебания сигнала
+            //double A = 0;
+            ////Частота меандра
+            //int  F = 0,
+            ////Частота дискретизации
+            // Fd = 0;
+
+            //double.TryParse(amp, out A);
+            //int.TryParse(freq, out F);
+            //int.TryParse(freqDigit, out Fd);
+
+            ////Время периода
+            //double T = 1 / (double)F;
+            //double AllTime = T * (double)count;
+            //int ScanCount = (int)(AllTime * Fd);
+
+            //Timer timer = new Timer(200);
+
+
+            //timer.Elapsed += async (o, e) => await SendLvl(amp);
+            //timer.Start();
+
+            //while (c < ScanCount) ;
+            //timer.Stop();
+
+
+            ////c = 0;
+            ////Timer timer = new Timer(new TimerCallback(SendLvl), A, 0, 5);
+            ////while (c < ScanCount) ;
+            ////timer.Dispose();
+
+            //for (int i = 0; i < count; i++)
+            //{
+
+            //}
+
+            int ScanCount = 10;
+
+
+
+            double[] time = new double[]  { 1, 2,  3,  3, 4, 5, 6,  6, 7 };
+            double[] value = new double[] { 5, 5, -5, -5, 5, 5, 5, -5, 6 };
+
+            ///Построение меандра
+
+            return FormatedOutputMeandr(time, value);
         }
 
         public string ReadMeandre(string freqDigid)
