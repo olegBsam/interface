@@ -7,13 +7,16 @@ namespace I7000Server
     {
         static void Main(string[] args)
         {
+            Module.CreateModul();
+
+
+            //  Module.GetModul.BuildMeandre("5", "2", "10", "4", "3");
             int thCount = Environment.ProcessorCount;
             if (thCount < 2)
                 thCount = 2;
-            ThreadPool.SetMaxThreads(5, 5);
+            ThreadPool.SetMaxThreads(10, 10);
             ThreadPool.SetMinThreads(3, 3);
 
-            Module.CreateModul();
 
             ///
             /// 

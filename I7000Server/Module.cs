@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Threading;
 
 namespace I7000Server
 {
@@ -13,6 +14,20 @@ namespace I7000Server
         private SerialPort comPort = null;
 
         public static Module GetModul = null;
+
+
+        private double amplitude;
+        private double ampl;
+        private volatile object setLvlSynch;
+        private List<double> time;
+        private volatile List<string> times;
+        private volatile List<double> value;
+        private volatile List<string> valueStr;
+
+        private System.Timers.Timer freqTimer;
+        private System.Timers.Timer samplingTimer;
+        private System.Timers.Timer maintimer;
+
 
         public static void CreateModul()
         {
@@ -29,51 +44,17 @@ namespace I7000Server
             comPort.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
         }
 
-        private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            AddRecieve();
-        }
-
-        public void WriteToPort(string command)
-        {
-            // записать команду в COM-порт (символ окончания команды – 0x0D)
-            comPort.WriteLine(command + (char)0x0D);
-            // выдать сообщение в историю
-            addHistoryMessage("Записана команда:" + command + "\n");
-        }
-
-        public void AddRecieve()
-        {
-            // задержка
-            System.Threading.Thread.Sleep(100);
-            // буфер для чтения данных из COM-порта
-            byte[] dataR = new byte[comPort.BytesToRead];
-            // прочитать данные
-            comPort.Read(dataR, 0, dataR.Length);
-            // добавить ответ в историю команд
-            addHistoryMessage("Получен ответ:");
-            for (int i = 0; i < dataR.Length; i += 1)
-                addHistoryMessage(((char)dataR[i]).ToString());
-            addHistoryMessage("\n");
-            comPort.DiscardInBuffer();
-        }
-
-
-        public void ClosePort()
-        {
-            // освободить выходной буфер
-            comPort.DiscardOutBuffer();
-            // освободить входной буфер
-            comPort.DiscardInBuffer();
-            // закрыть порт
-            if (comPort.IsOpen)
-                comPort.Close();
-            addHistoryMessage("Порт закрыт. \n");
-        }
-
+       
         public void addHistoryMessage(string msg)
         {
             History.WriteHistory(msg + "<br>");
+        }
+
+        private long toMillisecond(string str)
+        {
+            string[] strs = str.Split(new char[] { ':' });
+            long ms = long.Parse(strs[1]) * 60 * 1000 + long.Parse(strs[2]) * 1000 + long.Parse(strs[3]);
+            return ms;
         }
 
         private string FormatedOutputMeandr(double[] time, double[] value)
@@ -94,105 +75,215 @@ namespace I7000Server
             return sb.ToString();
         }
 
-        public async Task<int> SendLvl(object amp)
+        public string BuildMeandre(string amp, string frequency, string freqDigit, string adcAdr, string dacAdr)
         {
-            string s = DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff");
-            Console.WriteLine(c++ + '.' + s);
+            long starTime = toMillisecond(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
 
-            //double A = 0;
-            //double.TryParse(amp.ToString() , out A);
-            return 1;
+            initialize();
+
+            amplitude = 0;
+
+            setLvlSynch = new object();
+
+            times.Add(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
+            value.Add(5);
+
+            double.TryParse(amp, out ampl);
+            amplitude = ampl;
+
+            double sampleFreq;
+            double.TryParse(freqDigit, out sampleFreq);
+
+            double freq;
+            double.TryParse(frequency, out freq);
+
+  
+
+            double samplingT = 1 / sampleFreq * 1000;
+            double freqT = 1 / freq * 1000;
+            double allTime = 10 * freqT;          ///10 периодов
+
+            //Таймер переполняющийся по периоду дискретизации
+            samplingTimer = new System.Timers.Timer();
+            samplingTimer.AutoReset = true;
+
+            samplingTimer.Interval = samplingT;
+            samplingTimer.Elapsed += SendLvl;
+
+            //Таймер переполняющийся по половине периода меандра
+            freqTimer = new System.Timers.Timer();
+            freqTimer.AutoReset = true;
+
+            freqTimer.Interval = freqT / 2;
+            freqTimer.Elapsed += FreqTimer_Elapsed;
+
+            //Таймер, который переполняется по истечению времени, заданного пользователем (количество периодов)
+            maintimer = new System.Timers.Timer();
+            maintimer.AutoReset = false;
+            maintimer.Elapsed += Maintimer_Elapsed;
+
+            maintimer.Interval = allTime;
+
+            freqTimer.Start();
+            samplingTimer.Start();
+            maintimer.Start();
+
+            while (maintimer.Enabled) ;
+
+            foreach(var o in times)
+                time.Add(toMillisecond(o) - starTime);
+
+            return FormatedOutputMeandr(time.ToArray(), value.ToArray());
         }
 
-        volatile int c;
-
-        public string BuildMeandre(string amp, string freq, string freqDigit, string adcAdr, string dacAdr)
+        private void FreqTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            ////кол-во периодов
-            //int count = 10;
-            ////Амплитуда колебания сигнала
-            //double A = 0;
-            ////Частота меандра
-            //int  F = 0,
-            ////Частота дискретизации
-            // Fd = 0;
-
-            //double.TryParse(amp, out A);
-            //int.TryParse(freq, out F);
-            //int.TryParse(freqDigit, out Fd);
-
-            ////Время периода
-            //double T = 1 / (double)F;
-            //double AllTime = T * (double)count;
-            //int ScanCount = (int)(AllTime * Fd);
-
-            //Timer timer = new Timer(200);
-
-
-            //timer.Elapsed += async (o, e) => await SendLvl(amp);
-            //timer.Start();
-
-            //while (c < ScanCount) ;
-            //timer.Stop();
-
-
-            ////c = 0;
-            ////Timer timer = new Timer(new TimerCallback(SendLvl), A, 0, 5);
-            ////while (c < ScanCount) ;
-            ////timer.Dispose();
-
-            //for (int i = 0; i < count; i++)
-            //{
-
-            //}
-
-            int ScanCount = 10;
-
-            //double[] time = new double[80];
-            //double[] value = new double[80];
-
-            List<double> val = new List<double>();
-            List<double> time = new List<double>();
-
-            int j = 0;
-            for (int i = 0; i < 80; i++)
+            lock (setLvlSynch)
             {
-                j++;
-                if (j == 5)
-                {
-                    time.Add(i);
-                    val.Add(5);
-                }
-                if (j == 10)
-                {
-                    j = 0;
-                    time.Add(i);
-                    val.Add(-5);
-                }
-
-                if (j + 1 <= 5)
-                    val.Add(5);
-                else
-                    val.Add(-5);
-
-               
-                time.Add(i);
+                amplitude = amplitude == 0 ? ampl : 0;
             }
-
-            ///Построение меандра
-
-            return FormatedOutputMeandr(time.ToArray(), val.ToArray());
         }
 
-        public string ReadMeandre(string freqDigid, string adcAdr, string dacAdr)
+        private void Maintimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+           // lock (setLvlSynch)
+            {
+                samplingTimer.Stop();
+                freqTimer.Stop();
+                samplingTimer.Dispose();
+                freqTimer.Dispose();
+            }
+        }
+
+        private void SendLvl(object sender, ElapsedEventArgs e)
+        {
+            lock (setLvlSynch)
+            {
+                //WriteToPort("Установить уровень = amplitude");
+                //ReadPort("Считать значение с ацп")
+                times.Add(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
+                value.Add(amplitude);
+            }
+            return;
+        }
+        private void ReadLvl(object sender, ElapsedEventArgs e)
+        {
+            lock (setLvlSynch)
+            {
+
+                //WriteToPort("Установить уровень = amplitude");
+                //ReadPort("Считать значение с ацп")
+                times.Add(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
+                ThreadPool.QueueUserWorkItem((o) => valueStr.Add(AddRecieve()) /*"считать значение с порта"*/);//Должно работать :)
+            }
+            return;
+        }
+
+        private void initialize()
+        {
+            if (freqTimer != null)
+                freqTimer.Dispose();
+            if (samplingTimer != null)
+                samplingTimer.Dispose();
+            if (maintimer != null)
+                maintimer.Dispose();
+
+            time = new List<double>();
+            value = new List<double>();
+            times = new List<string>();
+        }
+
+        public string ReadMeandre(string freqDigit, string adcAdr, string dacAdr)
+        {
+
+            long starTime = toMillisecond(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
+
+            initialize();
+
+            amplitude = 0;
+
+            setLvlSynch = new object();
+
+            double sampleFreq;
+            double.TryParse(freqDigit, out sampleFreq);
+
+            double samplingT = 1 / sampleFreq * 1000;
+            double allTime = 10_000;
+
+            //Таймер переполняющийся по периоду дискретизации
+            samplingTimer = new System.Timers.Timer();
+            samplingTimer.AutoReset = true;
+
+            samplingTimer.Interval = samplingT;
+            samplingTimer.Elapsed += ReadLvl;
+
+            //Таймер, который переполняется по истечению времени, заданного пользователем (количество периодов)
+            maintimer = new System.Timers.Timer();
+            maintimer.AutoReset = false;
+            maintimer.Elapsed += Maintimer_Elapsed;
+
+            maintimer.Interval = allTime;
+
+            samplingTimer.Start();
+            maintimer.Start();
+
+            while (maintimer.Enabled) ;
+
+            foreach (var o in times)
+                time.Add(toMillisecond(o) - starTime);
+
+            return FormatedOutputMeandr(time.ToArray(), value.ToArray());
+        }
+
+        private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            AddRecieve();
+        }
+
+        public void WriteToPort(string command)
+        {
+            // записать команду в COM-порт (символ окончания команды – 0x0D)
+            comPort.WriteLine(command + (char)0x0D);
+            // выдать сообщение в историю
+            addHistoryMessage("Записана команда:" + command + "\n");
+        }
+
+        public string AddRecieve()
         {
             StringBuilder sb = new StringBuilder();
 
+            // задержка
+            System.Threading.Thread.Sleep(100);
+            // буфер для чтения данных из COM-порта
+            byte[] dataR = new byte[comPort.BytesToRead];
+            // прочитать данные
+            comPort.Read(dataR, 0, dataR.Length);
+            // добавить ответ в историю команд
+            addHistoryMessage("Получен ответ:");
 
-
+            for (int i = 0; i < dataR.Length; i += 1)
+                sb.Append(((char)dataR[i]).ToString());
+            //addHistoryMessage(((char)dataR[i]).ToString());
+            addHistoryMessage(sb.ToString());
+            addHistoryMessage("\n");
+            comPort.DiscardInBuffer();
 
             return sb.ToString();
         }
+
+
+        public void ClosePort()
+        {
+            // освободить выходной буфер
+            comPort.DiscardOutBuffer();
+            // освободить входной буфер
+            comPort.DiscardInBuffer();
+            // закрыть порт
+            if (comPort.IsOpen)
+                comPort.Close();
+            addHistoryMessage("Порт закрыт. \n");
+        }
+
 
         public void openPort(string portName, string speed)
         {
