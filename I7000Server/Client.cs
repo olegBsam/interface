@@ -49,9 +49,9 @@ namespace I7000Server
                         break;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Console.WriteLine("Ошибка приема сообщения от клиента: {0}", e.Message);
+                //Console.WriteLine("Ошибка приема сообщения от клиента: {0}", e.Message);
                 return;
             }
 
@@ -217,7 +217,7 @@ namespace I7000Server
             {
                 Console.WriteLine("Ошибка отправки ответа клиенту: {0}", e.Message);
             }
-}
+        }
 
         //Отправка кода ошибки
         private void SendError(int code = 0, string codeString = null)
@@ -280,29 +280,16 @@ namespace I7000Server
             {
                 try
                 {
-                    string reqStr = reqMatch.Groups[0].Value;
-                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] masStr = reqMatch.Groups[0].Value.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
 
-                    string result = Module.GetModul.BuildMeandre(masStr[1], masStr[3], masStr[5]);
+                    string result = string.Empty;
+
+                    if (masStr[10].Equals("handed"))
+                        result = Module.GetModul.BuildMeandre(masStr[7], masStr[5], masStr[9], masStr[1], masStr[3]);
+                    else
+                        result = Module.GetModul.ReadMeandre(masStr[9], masStr[1], masStr[3]);
 
                     SendMessage(len: result.Length.ToString(), html: result);
-                }
-                catch (Exception)
-                {
-                    SendMessage(425.ToString() + " Bad request ", 0.ToString());
-                }
-                return true;
-            }
-            else if (reqMatch.Groups[0].Value.Contains("auto"))
-            {
-                try
-                {
-                    string reqStr = reqMatch.Groups[0].Value;
-                    string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
-
-                    string result = Module.GetModul.ReadMeandre(masStr[1]);
-
-                    SendMessage(result, result.Length.ToString());
                 }
                 catch (Exception)
                 {

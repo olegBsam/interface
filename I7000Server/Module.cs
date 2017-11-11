@@ -106,7 +106,7 @@ namespace I7000Server
 
         volatile int c;
 
-        public string BuildMeandre(string amp, string freq, string freqDigit)
+        public string BuildMeandre(string amp, string freq, string freqDigit, string adcAdr, string dacAdr)
         {
             ////кол-во периодов
             //int count = 10;
@@ -148,17 +148,43 @@ namespace I7000Server
 
             int ScanCount = 10;
 
+            //double[] time = new double[80];
+            //double[] value = new double[80];
 
+            List<double> val = new List<double>();
+            List<double> time = new List<double>();
 
-            double[] time = new double[]  { 1, 2,  3,  3, 4, 5, 6,  6, 7 };
-            double[] value = new double[] { 5, 5, -5, -5, 5, 5, 5, -5, 6 };
+            int j = 0;
+            for (int i = 0; i < 80; i++)
+            {
+                j++;
+                if (j == 5)
+                {
+                    time.Add(i);
+                    val.Add(5);
+                }
+                if (j == 10)
+                {
+                    j = 0;
+                    time.Add(i);
+                    val.Add(-5);
+                }
+
+                if (j + 1 <= 5)
+                    val.Add(5);
+                else
+                    val.Add(-5);
+
+               
+                time.Add(i);
+            }
 
             ///Построение меандра
 
-            return FormatedOutputMeandr(time, value);
+            return FormatedOutputMeandr(time.ToArray(), val.ToArray());
         }
 
-        public string ReadMeandre(string freqDigid)
+        public string ReadMeandre(string freqDigid, string adcAdr, string dacAdr)
         {
             StringBuilder sb = new StringBuilder();
 
