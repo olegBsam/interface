@@ -86,6 +86,18 @@ textarea { resize: none; }
     top: 200px;
 }
 
+#timeGener {
+    position: absolute;
+    left: 170px;
+    top: 250px;
+}
+
+#errorTimeGener {
+    position: absolute;
+    left: 350px;
+    top: 237px;
+}
+
 /*#sendAdress {
     position: absolute;
     left: 170px;
