@@ -52,6 +52,18 @@ $(document).ready(function() {
 			document.getElementById("errorAdressDAC").style.display = "none";
 		}
 	});
+	
+	$("#timeGener").keyup(function(){
+		var variable = $(this).val();
+		if (variable.length == 0){
+			$(this).addClass('invalid');
+			document.getElementById("errorTimeGener").style.display = "block";
+		}
+		else{
+			$(this).removeClass('invalid');
+			document.getElementById("errorTimeGener").style.display = "none";
+		}
+	});
 
 	$("#frequency").keyup(function(){
 		var variable = $(this).val();
@@ -137,8 +149,10 @@ function checkValidation(form){
 	$('#samplingFrequency').keyup();
 	$("#adressADC").keyup();
 	$("#adressDAC").keyup();
+	$("#timeGener").keyup();
 	return ((document.getElementById("frequency").getAttribute("class") != "invalid") && 
 		(document.getElementById("amplitude").getAttribute("class") != "invalid") && 
+		(document.getElementById("timeGener").getAttribute("class") != "invalid") &&
 		(document.getElementById("adressADC").getAttribute("class") != "invalid") &&
 		(document.getElementById("adressDAC").getAttribute("class") != "invalid"));
 } 

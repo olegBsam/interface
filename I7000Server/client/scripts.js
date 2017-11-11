@@ -28,6 +28,7 @@ function AjaxFormRequest(form, button) {
                     document.getElementById('buttonMeandr').disabled = false;
                     document.getElementById('adressADC').disabled = false;
                     document.getElementById('adressDAC').disabled = false;
+					document.getElementById('timeGener').disabled = false;
                     //document.getElementById('sendAdress').disabled = false;
                     document.getElementById('handed').disabled = false;
                 }
@@ -44,6 +45,7 @@ function AjaxFormRequest(form, button) {
                     document.getElementById('buttonMeandr').disabled = true;
                     document.getElementById('adressADC').disabled = true;
                     document.getElementById('adressDAC').disabled = true;
+					document.getElementById('timeGener').disabled = true;
                     //document.getElementById('sendAdress').disabled = true;
                     document.getElementById('handed').disabled = true;
                 }
@@ -64,6 +66,7 @@ function AjaxFormRequest(form, button) {
                     document.getElementById('buttonMeandr').disabled = false;
                     document.getElementById('adressADC').disabled = false;
                     document.getElementById('adressDAC').disabled = false;
+					document.getElementById('timeGener').disabled = false;
                     //document.getElementById('sendAdress').disabled = false;
                     document.getElementById('handed').disabled = false;
                 }
@@ -80,6 +83,7 @@ function AjaxFormRequest(form, button) {
                     document.getElementById('buttonMeandr').disabled = true;
                     document.getElementById('adressADC').disabled = true;
                     document.getElementById('adressDAC').disabled = true;
+					document.getElementById('timeGener').disabled = true;
                     //document.getElementById('sendAdress').disabled = true;
                     document.getElementById('handed').disabled = true;
                 }
