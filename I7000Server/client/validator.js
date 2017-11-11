@@ -144,15 +144,20 @@ function checkValidation(form){
 		return (document.getElementById("command").getAttribute("class") != "invalid");
 	}
 	
-	$('#frequency').keyup();
-	$('#amplitude').keyup();
-	$('#samplingFrequency').keyup();
-	$("#adressADC").keyup();
-	$("#adressDAC").keyup();
-	$("#timeGener").keyup();
-	return ((document.getElementById("frequency").getAttribute("class") != "invalid") && 
-		(document.getElementById("amplitude").getAttribute("class") != "invalid") && 
-		(document.getElementById("timeGener").getAttribute("class") != "invalid") &&
-		(document.getElementById("adressADC").getAttribute("class") != "invalid") &&
-		(document.getElementById("adressDAC").getAttribute("class") != "invalid"));
+	if(form == 'formMeandr') {
+		$('#frequency').keyup();
+		$('#amplitude').keyup();
+		$('#samplingFrequency').keyup();
+		$("#adressADC").keyup();
+		$("#adressDAC").keyup();
+		$("#timeGener").keyup();
+		return ((document.getElementById("frequency").getAttribute("class") != "invalid") && 
+			(document.getElementById("amplitude").getAttribute("class") != "invalid") && 
+			(document.getElementById("timeGener").getAttribute("class") != "invalid") &&
+			(document.getElementById("samplingFrequency").getAttribute("class") != "invalid") &&
+			(document.getElementById("adressADC").getAttribute("class") != "invalid") &&
+			(document.getElementById("adressDAC").getAttribute("class") != "invalid"));
+	}
+	
+	return true;
 } 
