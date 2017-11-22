@@ -29,7 +29,8 @@ namespace I7000Server
         private static Object locker = null;
         public static void ClientThread(Object stateInfo)
         {
-            while (locker != null) ;
+            while (locker != null)
+                ;
             locker = new Object();
             new Client((TcpClient)stateInfo);
             locker = null;
@@ -254,7 +255,7 @@ namespace I7000Server
                     Module.GetModul.openPort(masStr[1], masStr[3]);
                     SendMessage();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     SendMessage(425.ToString() + " Bad request ", 0.ToString());
                 }
@@ -282,12 +283,7 @@ namespace I7000Server
                 {
                     string[] masStr = reqMatch.Groups[0].Value.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
 
-                    string result = string.Empty;
-
-                    if (masStr[10].Equals("handed"))
-                        result = Module.GetModul.BuildMeandre(masStr[7], masStr[5], masStr[9], masStr[1], masStr[3]);
-                    else
-                        result = Module.GetModul.ReadMeandre(masStr[9], masStr[1], masStr[3]);
+                    string result = Module.GetModul.BuildMeandre(masStr[1], masStr[3], masStr[5], masStr[7], masStr[9]);
 
                     SendMessage(len: result.Length.ToString(), html: result);
                 }
@@ -297,6 +293,23 @@ namespace I7000Server
                 }
                 return true;
             }
+            else if (reqMatch.Groups[0].Value.Contains("adressADC"))
+            {
+                string[] masStr = reqMatch.Groups[0].Value.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
+
+                string result = masStr[1];
+
+                string answer = Module.GetModul.ReadLvl(result);
+
+
+
+                answer = answer.Replace("+", "");
+
+                answer = answer.Replace(",", ".");
+
+                SendMessage(len: answer.Length.ToString(), html: answer);
+            }
+
             return false;
         }
     }

@@ -16,13 +16,14 @@ namespace I7000Server
         public static Module GetModul = null;
 
 
-        private double amplitude;
-        private double ampl;
+        private string amplitude;
+        private string ampl;
+        private volatile string log = "";
         private volatile object setLvlSynch;
         private List<double> time;
         private volatile List<string> times;
-        private volatile List<double> value;
-        private volatile List<string> valueStr;
+        private volatile List<string> value;
+
 
         private System.Timers.Timer freqTimer;
         private System.Timers.Timer samplingTimer;
@@ -57,38 +58,38 @@ namespace I7000Server
             return ms;
         }
 
-        private string FormatedOutputMeandr(double[] time, double[] value)
+        private string FormatedOutputMeandr(double[] time, string[] value)
         {
             StringBuilder sb = new StringBuilder();
 
             if((time.Length == value.Length) && time.Length > 0)
             {
                 sb.Append(time[0]);
-                sb.Append(" " + value[0]);
+                sb.Append(" " + value[0].Replace(',', '.'));
 
                 for(int i = 1; i < time.Length; i++)
                 {
                     sb.Append(" " + time[i]);
-                    sb.Append(" " + value[i]);
+                    sb.Append(" " + value[i].Replace(',', '.'));
                 }
             }
             return sb.ToString();
         }
 
-        public string BuildMeandre(string amp, string frequency, string freqDigit, string adcAdr, string dacAdr)
+        public string BuildMeandre(string amp, string frequency, string freqDigit, string dacAdr, string period)
         {
             long starTime = toMillisecond(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
 
             initialize();
 
-            amplitude = 0;
+            amplitude = "0";
 
             setLvlSynch = new object();
 
             times.Add(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
-            value.Add(5);
+            value.Add(5.ToString());
 
-            double.TryParse(amp, out ampl);
+            ampl = amp;
             amplitude = ampl;
 
             double sampleFreq;
@@ -97,11 +98,13 @@ namespace I7000Server
             double freq;
             double.TryParse(frequency, out freq);
 
-  
+            double t;
+            double.TryParse(period, out t);
+
 
             double samplingT = 1 / sampleFreq * 1000;
             double freqT = 1 / freq * 1000;
-            double allTime = 10 * freqT;          ///10 периодов
+            double allTime = t * freqT;          ///10 периодов
 
             //Таймер переполняющийся по периоду дискретизации
             samplingTimer = new System.Timers.Timer();
@@ -140,7 +143,7 @@ namespace I7000Server
         {
             lock (setLvlSynch)
             {
-                amplitude = amplitude == 0 ? ampl : 0;
+                amplitude = amplitude.Equals("0") ? ampl : "0";
             }
         }
 
@@ -149,9 +152,12 @@ namespace I7000Server
            // lock (setLvlSynch)
             {
                 samplingTimer.Stop();
-                freqTimer.Stop();
+                if(freqTimer != null)
+                {
+                    freqTimer.Stop();
+                    freqTimer.Dispose();
+                }
                 samplingTimer.Dispose();
-                freqTimer.Dispose();
             }
         }
 
@@ -162,23 +168,74 @@ namespace I7000Server
                 //WriteToPort("Установить уровень = amplitude");
                 //ReadPort("Считать значение с ацп")
                 times.Add(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
-                value.Add(amplitude);
+                value.Add(amplitude.ToString());
             }
             return;
         }
-        private void ReadLvl(object sender, ElapsedEventArgs e)
+
+        private volatile object obj = null;
+
+        //private void ReadLvl(object sender, ElapsedEventArgs e)
+        //{
+        //    lock (setLvlSynch)
+        //    {
+        //        GetModul.WriteToPort("#040");
+
+        //        while (obj == null) ;
+
+        //        lock (readPort)
+        //        {
+        //            try
+        //            {
+
+        //                string[] strMas = log.Split(new string[] { ">", "\r" }, StringSplitOptions.None);
+
+        //                strMas[1] = strMas[1].Replace('.', ',');
+
+        //                //WriteToPort("Установить уровень = amplitude");
+        //                //ReadPort("Считать значение с ацп")
+        //                times.Add(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
+        //                value.Add(strMas[1]);
+        //                //valueStr.Add(amp.ToString()); /*"считать значение с порта"*///Должно работать :)
+        //                obj = null;
+        //            }
+        //            catch (Exception)
+        //            {
+
+        //            }
+        //        }
+        //    }
+        //    return;
+        //}
+
+        public string ReadLvl(string adress)
         {
-            lock (setLvlSynch)
+            string result = string.Empty;
+           // lock (setLvlSynch)
             {
+                GetModul.WriteToPort("#" + (adress.Length == 1 ?  '0'  + adress : adress) + "0");
 
-                //WriteToPort("Установить уровень = amplitude");
-                //ReadPort("Считать значение с ацп")
-                times.Add(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
-                ThreadPool.QueueUserWorkItem((o) => valueStr.Add(AddRecieve()) /*"считать значение с порта"*/);//Должно работать :)
+                while (obj == null);
+              
+
+                lock (readPort)
+                {
+                    try
+                    {
+                        string[] strMas = log.Split(new string[] { ">", "\r" }, StringSplitOptions.None);
+
+                        result = strMas[1].Replace('.', ',');
+
+                        obj = null;
+                    }
+                    catch (Exception)
+                    {
+                        result = "0";
+                    }
+                }
             }
-            return;
+            return result;
         }
-
         private void initialize()
         {
             if (freqTimer != null)
@@ -189,55 +246,57 @@ namespace I7000Server
                 maintimer.Dispose();
 
             time = new List<double>();
-            value = new List<double>();
+            value = new List<string>();
             times = new List<string>();
         }
 
-        public string ReadMeandre(string freqDigit, string adcAdr, string dacAdr)
-        {
+        //public string ReadMeandre(string freqDigit, string adcAdr, string dacAdr)
+        //{
 
-            long starTime = toMillisecond(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
 
-            initialize();
+        //    long starTime = toMillisecond(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
 
-            amplitude = 0;
+        //    initialize();
 
-            setLvlSynch = new object();
+        //    amplitude = "0";
 
-            double sampleFreq;
-            double.TryParse(freqDigit, out sampleFreq);
+        //    setLvlSynch = new object();
 
-            double samplingT = 1 / sampleFreq * 1000;
-            double allTime = 10_000;
+        //    double sampleFreq;
+        //    double.TryParse(freqDigit, out sampleFreq);
 
-            //Таймер переполняющийся по периоду дискретизации
-            samplingTimer = new System.Timers.Timer();
-            samplingTimer.AutoReset = true;
+        //    double samplingT = 1 / sampleFreq * 1000;
+        //    double allTime = 10_000;
 
-            samplingTimer.Interval = samplingT;
-            samplingTimer.Elapsed += ReadLvl;
+        //    //Таймер переполняющийся по периоду дискретизации
+        //    samplingTimer = new System.Timers.Timer();
+        //    samplingTimer.AutoReset = true;
 
-            //Таймер, который переполняется по истечению времени, заданного пользователем (количество периодов)
-            maintimer = new System.Timers.Timer();
-            maintimer.AutoReset = false;
-            maintimer.Elapsed += Maintimer_Elapsed;
+        //    samplingTimer.Interval = samplingT;
+        //    samplingTimer.Elapsed += ReadLvl;
 
-            maintimer.Interval = allTime;
+        //    //Таймер, который переполняется по истечению времени, заданного пользователем (количество периодов)
+        //    maintimer = new System.Timers.Timer();
+        //    maintimer.AutoReset = false;
+        //    maintimer.Elapsed += Maintimer_Elapsed;
 
-            samplingTimer.Start();
-            maintimer.Start();
+        //    maintimer.Interval = allTime;
 
-            while (maintimer.Enabled) ;
+        //    samplingTimer.Start();
+        //    maintimer.Start();
 
-            foreach (var o in times)
-                time.Add(toMillisecond(o) - starTime);
+        //    while (maintimer.Enabled) ;
 
-            return FormatedOutputMeandr(time.ToArray(), value.ToArray());
-        }
+        //    foreach (var o in times)
+        //        time.Add(toMillisecond(o) - starTime);
+
+
+        //    return FormatedOutputMeandr(time.ToArray(), value.ToArray());
+        //}
 
         private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            AddRecieve();
+                AddRecieve();
         }
 
         public void WriteToPort(string command)
@@ -248,27 +307,35 @@ namespace I7000Server
             addHistoryMessage("Записана команда:" + command + "\n");
         }
 
+        private volatile object readPort = new object();
         public string AddRecieve()
         {
-            StringBuilder sb = new StringBuilder();
+            lock (readPort)
+            {
 
-            // задержка
-            System.Threading.Thread.Sleep(100);
-            // буфер для чтения данных из COM-порта
-            byte[] dataR = new byte[comPort.BytesToRead];
-            // прочитать данные
-            comPort.Read(dataR, 0, dataR.Length);
-            // добавить ответ в историю команд
-            addHistoryMessage("Получен ответ:");
+                StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < dataR.Length; i += 1)
-                sb.Append(((char)dataR[i]).ToString());
-            //addHistoryMessage(((char)dataR[i]).ToString());
-            addHistoryMessage(sb.ToString());
-            addHistoryMessage("\n");
-            comPort.DiscardInBuffer();
+                // задержка
+                System.Threading.Thread.Sleep(100);
+                // буфер для чтения данных из COM-порта
+                byte[] dataR = new byte[comPort.BytesToRead];
+                // прочитать данные
+                comPort.Read(dataR, 0, dataR.Length);
+                // добавить ответ в историю команд
+                addHistoryMessage("Получен ответ:");
 
-            return sb.ToString();
+                for (int i = 0; i < dataR.Length; i += 1)
+                    sb.Append(((char)dataR[i]).ToString());
+                //addHistoryMessage(((char)dataR[i]).ToString());
+                addHistoryMessage(sb.ToString());
+                addHistoryMessage("\n");
+                comPort.DiscardInBuffer();
+
+                log = sb.ToString();
+                obj = new object();
+            }
+           
+            return log;
         }
 
 

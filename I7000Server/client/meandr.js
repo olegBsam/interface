@@ -21,13 +21,9 @@
             
         function drawChart() {
             var data = google.visualization.arrayToDataTable(vals);
-            var options = (document.getElementById("handed").checked) ? 
-                {title: 'Ручной меандр', legend: { position: 'bottom' }} : 
-                {title: 'Автоматический меандр', legend: { position: 'bottom' }};
+            var options = {title: 'Меандр', legend: { position: 'bottom' }};
 
-            var chart = (document.getElementById("handed").checked) ?
-                new google.visualization.LineChart(document.getElementById('chartHanded')) :
-                new google.visualization.LineChart(document.getElementById('chartAuto'));
+            var chart = new google.visualization.LineChart(document.getElementById('chart'));
 
             chart.draw(data, options);
         }

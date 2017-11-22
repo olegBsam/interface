@@ -40,27 +40,37 @@
 			<h2>Меандр</h2>
 			
 			<form method="get" action="" id="formMeandr"> 
-				<input id="adressADC" type="number" name="adressADC" placeholder="Адрес АЦП" disabled="true" maxlength="30" autocomplete="off"/>
-				<input id="adressDAC" type="number" name="adressDAC" placeholder="Адрес ЦАП" disabled="true" maxlength="30" autocomplete="off"/>
-				<p id="errorAdressADC" style="color:red; display:none;">Введите адрес АЦП.</p>
-				<p id="errorAdressDAC" style="color:red; display:none;">Введите адрес ЦАП.</p>
-				<input id="timeGener" type="number" name="timeGener" placeholder="Количество периодов" disabled="true" maxlength="30" autocomplete="off"/>
-				<p id="errorTimeGener" style="color:red; display:none;">Введите время генерации.</p>
-				<!--<input id="sendAdress" type="button" value="Выбрать устройство" disabled="true" onclick="AjaxFormRequest('formMeandr')"/>-->		
+				<input id="amp" type="hidden" name="amp" value = "1" maxlength="5"/> </p>
+				<p>Частота</p>
 				<p> <input id="frequency" type="number" name="frequency" placeholder="Частота" maxlength="5" autocomplete="off" disabled="true"/> </p>
 				<p id="errorFrequency" style="color:red; display:none;"></p>
-				<p> <input id="amplitude" type="number" name="amplitude" placeholder="Амплитуда" maxlength="5" autocomplete="off" disabled="true"/> </p>
-				<p id="errorAmplitude" style="color:red; display:none;"></p>
+				<p>Частота дискретизации</p>
 				<p> <input id="samplingFrequency" type="number" name="samplingFrequency" placeholder="Частота дискретизации" maxlength="5" autocomplete="off" disabled="true"/> </p>
 				<p id="errorSamplingFrequency" style="color:red; display:none;"></p>
-				<p>Ручной меандр<input checked="checked" id="handed" name="handed" disabled="true" type="checkbox" value="Ручной"></p>				
-				<br> <input id="buttonMeandr" type="button" value="Построить меандр" disabled="true" onclick="AjaxFormRequest('formMeandr')" disabled="true"/> </br>
+				<p>Адрес ЦАП</p>
+				<p> <input id="adressDAC" type="number" name="adressDAC" placeholder="Адрес ЦАП" disabled="true" maxlength="30" autocomplete="off"/> </p>
+				<p id="errorAdressDAC" style="color:red; display:none;">Введите адрес ЦАП.</p>
+				<p>Количество периодов</p>
+				<input id="timeGener" type="number" name="timeGener" placeholder="Количество периодов" disabled="true" maxlength="30" autocomplete="off"/>
+				<p id="errorTimeGener" style="color:red; display:none;">Введите количество периодов.</p>
+				<br>
+				<br> <input id="buttonMeandr" type="button" value="Построить меандр" disabled="true" onclick="AjaxFormRequest('formMeandr', this)" disabled="true"/> </br>
 				<br>
 			</form>
-			
-			<div id="chartHanded"></div>
-			<div id="chartAuto"></div>
 		</div>
+		
+		<div id="ADC">
+			<form method="get" action="" id="formADC"> 
+				<p>Адрес АЦП</p>
+				<input id="adressADC" type="number" name="adressADC" placeholder="Адрес АЦП" disabled="true" maxlength="30" autocomplete="off"/>
+				<p id="errorAdressADC" style="color:red; display:none;">Введите адрес АЦП.</p>
+				<p> <input id="buttonUADC" type="button" value="Получить напряжение" disabled="true" onclick="AjaxFormRequest('formADC')" disabled="true"/> </p>
+				<p>Напряжение АЦП</p>
+				<p> <input id="amplitude" type="number" name="amplitude" placeholder="Напряжение АЦП" disabled="true" value = "1" maxlength="30" autocomplete="off"/> </p>
+			</form>
+		</div>
+		
+		<div id="chart"></div>
 		
 	</body> 
 </html>
