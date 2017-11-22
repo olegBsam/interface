@@ -30,7 +30,8 @@ namespace I7000Server
         public static void ClientThread(Object stateInfo)
         {
             while (locker != null)
-                ;
+            { }
+
             locker = new Object();
             new Client((TcpClient)stateInfo);
             locker = null;
@@ -47,10 +48,12 @@ namespace I7000Server
                 {
                     request += Encoding.UTF8.GetString(buffer, 0, count);
                     if (request.IndexOf("\r\n\r\n") >= 0 || request.Length > 4096) //\r\n\r\n - конец запроса, иначе принимаем не более 4Кб
+                    {
                         break;
+                    }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //Console.WriteLine("Ошибка приема сообщения от клиента: {0}", e.Message);
                 return;
@@ -66,7 +69,9 @@ namespace I7000Server
 
             //Обработчики кнопок
             if (ButtonsHandlers(reqMatch))
+            {
                 return;
+            }
 
             //Запросы страниц
             string reqUri = reqMatch.Groups[1].Value;
@@ -147,10 +152,7 @@ namespace I7000Server
                     contentType = "image/" + extension.Substring(1);
                     break;
                 default:
-                    if (extension.Length > 1)
-                        contentType = "application/" + extension.Substring(1);
-                    else
-                        contentType = "application/unknown";
+                    contentType = (extension.Length > 1) ? "application/" + extension.Substring(1) : "application/unknown";
                     break;
             }
         }
@@ -182,8 +184,7 @@ namespace I7000Server
                 SendError(400);
                 return false;
             }
-            string contentType = "";
-            GetExtension(path.Substring(path.LastIndexOf('.')), out contentType);
+            GetExtension(path.Substring(path.LastIndexOf('.')), out string contentType);
 
             //Открываем запрошенный файл
             FileStream fileStream;
@@ -224,7 +225,9 @@ namespace I7000Server
         private void SendError(int code = 0, string codeString = null)
         {
             if (codeString == null)
+            {
                 codeString = code.ToString() + " " + ((HttpStatusCode)code).ToString();
+            }
             //Страница с ошибкой
             string html = "<html><body><h1>" + codeString + "</h1></body></html>";
             try
@@ -252,10 +255,10 @@ namespace I7000Server
                 {
                     string reqStr = reqMatch.Groups[0].Value;
                     string[] masStr = reqStr.Split(new string[] { "GET /?", "=", "&", " " }, StringSplitOptions.RemoveEmptyEntries);
-                    Module.GetModul.openPort(masStr[1], masStr[3]);
+                    Module.GetModul.OpenPort(masStr[1], masStr[3]);
                     SendMessage();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     SendMessage(425.ToString() + " Bad request ", 0.ToString());
                 }

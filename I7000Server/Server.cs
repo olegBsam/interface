@@ -25,7 +25,9 @@ namespace I7000Server
         ~Server()
         {
             if (Listener != null)
+            {
                 Listener.Stop();
+            }
         }
     }
 }

@@ -40,18 +40,20 @@ namespace I7000Server
 
         private Module()
         {
-            while (comPort != null) ;
+            while (comPort != null)
+            { }
+
             comPort = new SerialPort();
-            comPort.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
+            comPort.DataReceived += new SerialDataReceivedEventHandler(Port_DataReceived);
         }
 
        
-        public void addHistoryMessage(string msg)
+        public void AddHistoryMessage(string msg)
         {
             History.WriteHistory(msg + "<br>");
         }
 
-        private long toMillisecond(string str)
+        private long ToMillisecond(string str)
         {
             string[] strs = str.Split(new char[] { ':' });
             long ms = long.Parse(strs[1]) * 60 * 1000 + long.Parse(strs[2]) * 1000 + long.Parse(strs[3]);
@@ -78,9 +80,9 @@ namespace I7000Server
 
         public string BuildMeandre(string amp, string frequency, string freqDigit, string dacAdr, string period)
         {
-            long starTime = toMillisecond(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
+            long starTime = ToMillisecond(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss:fff"));
 
-            initialize();
+            Initialize();
 
             amplitude = "0";
 
@@ -92,14 +94,11 @@ namespace I7000Server
             ampl = amp;
             amplitude = ampl;
 
-            double sampleFreq;
-            double.TryParse(freqDigit, out sampleFreq);
+            double.TryParse(freqDigit, out double sampleFreq);
 
-            double freq;
-            double.TryParse(frequency, out freq);
+            double.TryParse(frequency, out double freq);
 
-            double t;
-            double.TryParse(period, out t);
+            double.TryParse(period, out double t);
 
 
             double samplingT = 1 / sampleFreq * 1000;
@@ -107,22 +106,28 @@ namespace I7000Server
             double allTime = t * freqT;          ///10 периодов
 
             //Таймер переполняющийся по периоду дискретизации
-            samplingTimer = new System.Timers.Timer();
-            samplingTimer.AutoReset = true;
+            samplingTimer = new System.Timers.Timer
+            {
+                AutoReset = true,
 
-            samplingTimer.Interval = samplingT;
+                Interval = samplingT
+            };
             samplingTimer.Elapsed += SendLvl;
 
             //Таймер переполняющийся по половине периода меандра
-            freqTimer = new System.Timers.Timer();
-            freqTimer.AutoReset = true;
+            freqTimer = new System.Timers.Timer
+            {
+                AutoReset = true,
 
-            freqTimer.Interval = freqT / 2;
+                Interval = freqT / 2
+            };
             freqTimer.Elapsed += FreqTimer_Elapsed;
 
             //Таймер, который переполняется по истечению времени, заданного пользователем (количество периодов)
-            maintimer = new System.Timers.Timer();
-            maintimer.AutoReset = false;
+            maintimer = new System.Timers.Timer
+            {
+                AutoReset = false
+            };
             maintimer.Elapsed += Maintimer_Elapsed;
 
             maintimer.Interval = allTime;
@@ -131,10 +136,13 @@ namespace I7000Server
             samplingTimer.Start();
             maintimer.Start();
 
-            while (maintimer.Enabled) ;
+            while (maintimer.Enabled)
+            { }
 
-            foreach(var o in times)
-                time.Add(toMillisecond(o) - starTime);
+            foreach (var o in times)
+            {
+                time.Add(ToMillisecond(o) - starTime);
+            }
 
             return FormatedOutputMeandr(time.ToArray(), value.ToArray());
         }
@@ -215,8 +223,8 @@ namespace I7000Server
             {
                 GetModul.WriteToPort("#" + (adress.Length == 1 ?  '0'  + adress : adress) + "0");
 
-                while (obj == null);
-              
+                while (obj == null)
+                { }
 
                 lock (readPort)
                 {
@@ -236,14 +244,22 @@ namespace I7000Server
             }
             return result;
         }
-        private void initialize()
+        private void Initialize()
         {
             if (freqTimer != null)
+            {
                 freqTimer.Dispose();
+            }
+
             if (samplingTimer != null)
+            {
                 samplingTimer.Dispose();
+            }
+
             if (maintimer != null)
+            {
                 maintimer.Dispose();
+            }
 
             time = new List<double>();
             value = new List<string>();
@@ -294,7 +310,7 @@ namespace I7000Server
         //    return FormatedOutputMeandr(time.ToArray(), value.ToArray());
         //}
 
-        private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
                 AddRecieve();
         }
@@ -304,7 +320,7 @@ namespace I7000Server
             // записать команду в COM-порт (символ окончания команды – 0x0D)
             comPort.WriteLine(command + (char)0x0D);
             // выдать сообщение в историю
-            addHistoryMessage("Записана команда:" + command + "\n");
+            AddHistoryMessage("Записана команда:" + command + "\n");
         }
 
         private volatile object readPort = new object();
@@ -322,13 +338,15 @@ namespace I7000Server
                 // прочитать данные
                 comPort.Read(dataR, 0, dataR.Length);
                 // добавить ответ в историю команд
-                addHistoryMessage("Получен ответ:");
+                AddHistoryMessage("Получен ответ:");
 
                 for (int i = 0; i < dataR.Length; i += 1)
+                {
                     sb.Append(((char)dataR[i]).ToString());
+                }
                 //addHistoryMessage(((char)dataR[i]).ToString());
-                addHistoryMessage(sb.ToString());
-                addHistoryMessage("\n");
+                AddHistoryMessage(sb.ToString());
+                AddHistoryMessage("\n");
                 comPort.DiscardInBuffer();
 
                 log = sb.ToString();
@@ -347,23 +365,27 @@ namespace I7000Server
             comPort.DiscardInBuffer();
             // закрыть порт
             if (comPort.IsOpen)
+            {
                 comPort.Close();
-            addHistoryMessage("Порт закрыт. \n");
+            }
+
+            AddHistoryMessage("Порт закрыт. \n");
         }
 
 
-        public void openPort(string portName, string speed)
+        public void OpenPort(string portName, string speed)
         {
             portName = "COM" + portName;
             if (comPort.IsOpen)
+            {
                 comPort.Close();
+            }
             else
             {// порт ранее открыт не был
              // название COM-порта
                 comPort.PortName = portName;
                 // скорость работы COM-порта
-                int baudRate = 9600;
-                int.TryParse(speed, out baudRate);
+                int.TryParse(speed, out int baudRate);
                 comPort.BaudRate = baudRate;
                 // число бит данных
                 comPort.DataBits = 8;
@@ -391,7 +413,7 @@ namespace I7000Server
                 comPort.RtsEnable = true;
                 // задержка
                 System.Threading.Thread.Sleep(100);
-                addHistoryMessage("Порт " + portName + " открыт \n");
+                AddHistoryMessage("Порт " + portName + " открыт \n");
             }
         }
     }
